@@ -97,6 +97,9 @@ exports.createHotel = async (req, res, next) => {
 
     return res.status(201).json({ success: true, data: hotel });
   } catch (error) {
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ success: false, message: error.message });
+    }
     return next(error);
   }
 };
