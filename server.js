@@ -2,6 +2,11 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
+const helmet = require('helmet');
+const { rateLimit } = require('express-rate-limit');
+const swaggerJsDoc = require('./config/swagger');
+const swaggerUI = require('swagger-ui-express');
+const { sanitizeNoSql, xssClean } = require('./middleware/security');
 
 const hospitalRoutes = require('./routes/hospitals');
 const authRoutes = require('./routes/auth');
@@ -16,6 +21,25 @@ app.set('query parser', 'extended');
 
 app.use(express.json());
 app.use(cookieParser());
+
+//Prevent NoSQL injection
+app.use(sanitizeNoSql);
+
+//Set security headers
+app.use(helmet());
+
+//Prevent XSS attacks
+app.use(xssClean);
+
+//Rate limiting
+const limiter = rateLimit({
+  windowMs: 10 * 60 * 1000, //10 mins
+  limit: Number(process.env.RATE_LIMIT_MAX) || 100,
+});
+app.use(limiter);
+
+//API documentation
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerJsDoc));
 
 app.use('/api/v1/hospitals', hospitalRoutes);
 app.use('/api/v1/auth', authRoutes);
