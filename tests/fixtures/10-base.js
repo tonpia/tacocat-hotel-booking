@@ -3,7 +3,7 @@
 
 exports.seed = async (mongoose) => {
   const User = mongoose.model('User');
-  const Hospital = mongoose.model('Hospital');
+  const Hotel = mongoose.model('Hotel');
 
   const admin = await User.create({
     name: 'Test Admin',
@@ -22,7 +22,7 @@ exports.seed = async (mongoose) => {
     password: 'user21234',
   });
 
-  const [hotel1, hotel2] = await Hospital.create([
+  const [hotel1, hotel2] = await Hotel.create([
     {
       name: 'Taco Hotel Bangkok',
       address: '1 Rama IV Road',

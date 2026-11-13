@@ -1,9 +1,9 @@
 const swaggerJsDoc = require('swagger-jsdoc');
 
-const hospitalBody = {
+const hotelBody = {
   type: 'object',
   properties: {
-    name: { type: 'string', example: 'Chulalongkorn Hospital' },
+    name: { type: 'string', example: 'Chulalongkorn Hotel' },
     address: { type: 'string', example: '1873 Rama IV Road' },
     district: { type: 'string', example: 'Pathum Wan' },
     province: { type: 'string', example: 'Bangkok' },
@@ -18,41 +18,41 @@ const idParam = {
   in: 'path',
   required: true,
   schema: { type: 'string' },
-  description: 'Hospital id',
+  description: 'Hotel id',
 };
 
 const options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'Hospital API',
+      title: 'Hotel API',
       version: '1.0.0',
-      description: 'Hospital REST API with appointments (Assignment 10)',
+      description: 'Hotel REST API with bookings (Assignment 10)',
     },
     servers: [{ url: `http://localhost:${process.env.PORT || 5000}/api/v1` }],
-    tags: [{ name: 'Hospital', description: 'Hospital management' }],
+    tags: [{ name: 'Hotel', description: 'Hotel management' }],
     components: {
       securitySchemes: {
         bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
       },
       schemas: {
-        Hospital: {
+        Hotel: {
           allOf: [
             { type: 'object', properties: { _id: { type: 'string' } } },
-            hospitalBody,
+            hotelBody,
           ],
         },
-        HospitalInput: { ...hospitalBody, required: ['name'] },
+        HotelInput: { ...hotelBody, required: ['name'] },
       },
     },
     paths: {
-      '/hospitals': {
+      '/hotels': {
         get: {
-          tags: ['Hospital'],
-          summary: 'Get all hospitals',
+          tags: ['Hotel'],
+          summary: 'Get all hotels',
           responses: {
             200: {
-              description: 'List of hospitals',
+              description: 'List of hotels',
               content: {
                 'application/json': {
                   schema: {
@@ -62,7 +62,7 @@ const options = {
                       count: { type: 'integer' },
                       data: {
                         type: 'array',
-                        items: { $ref: '#/components/schemas/Hospital' },
+                        items: { $ref: '#/components/schemas/Hotel' },
                       },
                     },
                   },
@@ -72,62 +72,62 @@ const options = {
           },
         },
         post: {
-          tags: ['Hospital'],
-          summary: 'Add one hospital (admin)',
+          tags: ['Hotel'],
+          summary: 'Add one hotel (admin)',
           security: [{ bearerAuth: [] }],
           requestBody: {
             required: true,
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/HospitalInput' },
+                schema: { $ref: '#/components/schemas/HotelInput' },
               },
             },
           },
           responses: {
-            201: { description: 'Hospital created' },
+            201: { description: 'Hotel created' },
             401: { description: 'Not authorize to access this route' },
             403: { description: 'User role is not authorized' },
           },
         },
       },
-      '/hospitals/{id}': {
+      '/hotels/{id}': {
         get: {
-          tags: ['Hospital'],
-          summary: 'Get one hospital',
+          tags: ['Hotel'],
+          summary: 'Get one hotel',
           parameters: [idParam],
           responses: {
-            200: { description: 'The hospital' },
-            404: { description: 'Hospital not found' },
+            200: { description: 'The hotel' },
+            404: { description: 'Hotel not found' },
           },
         },
         put: {
-          tags: ['Hospital'],
-          summary: 'Update the hospital (admin)',
+          tags: ['Hotel'],
+          summary: 'Update the hotel (admin)',
           security: [{ bearerAuth: [] }],
           parameters: [idParam],
           requestBody: {
             required: true,
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/HospitalInput' },
+                schema: { $ref: '#/components/schemas/HotelInput' },
               },
             },
           },
           responses: {
-            200: { description: 'Hospital updated' },
+            200: { description: 'Hotel updated' },
             401: { description: 'Not authorize to access this route' },
-            404: { description: 'Hospital not found' },
+            404: { description: 'Hotel not found' },
           },
         },
         delete: {
-          tags: ['Hospital'],
-          summary: 'Delete the hospital (admin)',
+          tags: ['Hotel'],
+          summary: 'Delete the hotel (admin)',
           security: [{ bearerAuth: [] }],
           parameters: [idParam],
           responses: {
-            200: { description: 'Hospital deleted' },
+            200: { description: 'Hotel deleted' },
             401: { description: 'Not authorize to access this route' },
-            404: { description: 'Hospital not found' },
+            404: { description: 'Hotel not found' },
           },
         },
       },

@@ -5,13 +5,13 @@ const dotenv = require('dotenv');
 
 dotenv.config({ path: './config/config.env' });
 
-const Hospital = require('./models/Hospital');
+const Hotel = require('./models/Hotel');
 const User = require('./models/User');
-const Appointment = require('./models/Appointment');
+const Booking = require('./models/Booking');
 
-//Fixed id that the test collection expects for this hospital
-const APPT_HOSPITAL_NAME = 'รักษ์สกล';
-const APPT_HOSPITAL_ID = '6ab8cf3ded32aea2b87adb42';
+//Fixed id that the test collection expects for this hotel
+const APPT_HOTEL_NAME = 'รักษ์สกล';
+const APPT_HOTEL_ID = '6ab8cf3ded32aea2b87adb42';
 
 const ADMIN = {
   name: 'admin',
@@ -45,44 +45,44 @@ function splitCsvLine(line) {
   return values;
 }
 
-//Read hospital.csv into hospital documents
-function readHospitals() {
+//Read hotel.csv into hotel documents
+function readHotels() {
   const csv = fs
-    .readFileSync(path.join(__dirname, '_data', 'hospital.csv'), 'utf8')
+    .readFileSync(path.join(__dirname, '_data', 'hotel.csv'), 'utf8')
     .replace(/^﻿/, '');
   const [header, ...lines] = csv.split(/\r?\n/).filter((line) => line.trim());
   const fields = splitCsvLine(header);
 
   return lines.map((line) => {
     const values = splitCsvLine(line);
-    const hospital = {};
+    const hotel = {};
     fields.forEach((field, index) => {
-      hospital[field] = values[index];
+      hotel[field] = values[index];
     });
     //Drop the running number column, it is not part of the model
-    delete hospital[fields[0]];
-    if (hospital.name === APPT_HOSPITAL_NAME) {
-      hospital._id = APPT_HOSPITAL_ID;
+    delete hotel[fields[0]];
+    if (hotel.name === APPT_HOTEL_NAME) {
+      hotel._id = APPT_HOTEL_ID;
     }
-    return hospital;
+    return hotel;
   });
 }
 
 async function deleteData() {
-  await Appointment.deleteMany();
-  await Hospital.deleteMany();
+  await Booking.deleteMany();
+  await Hotel.deleteMany();
   await User.deleteOne({ email: ADMIN.email });
   console.log('Data destroyed.');
 }
 
 async function importData() {
-  await Hospital.create(readHospitals());
+  await Hotel.create(readHotels());
   const admin = await User.create(ADMIN);
-  await Appointment.create(
+  await Booking.create(
     ['2026-11-01', '2026-11-02', '2026-11-03'].map((apptDate) => ({
       apptDate,
       user: admin._id,
-      hospital: APPT_HOSPITAL_ID,
+      hotel: APPT_HOTEL_ID,
     })),
   );
   console.log('Data imported.');
