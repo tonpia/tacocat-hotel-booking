@@ -8,9 +8,9 @@ const swaggerJsDoc = require('./config/swagger');
 const swaggerUI = require('swagger-ui-express');
 const { sanitizeNoSql, xssClean } = require('./middleware/security');
 
-const hospitalRoutes = require('./routes/hospitals');
+const hotelRoutes = require('./routes/hotels');
 const authRoutes = require('./routes/auth');
-const appointmentRoutes = require('./routes/appointments');
+const bookingRoutes = require('./routes/bookings');
 
 dotenv.config({ path: './config/config.env' });
 
@@ -41,14 +41,14 @@ app.use(limiter);
 //API documentation
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerJsDoc));
 
-app.use('/api/v1/hospitals', hospitalRoutes);
+app.use('/api/v1/hotels', hotelRoutes);
 app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/appointments', appointmentRoutes);
+app.use('/api/v1/bookings', bookingRoutes);
 
 app.use((error, req, res, next) => {
   const statusCode = error.name === 'CastError' ? 404 : 500;
   const message =
-    statusCode === 404 ? 'Hospital not found' : 'Unable to process request';
+    statusCode === 404 ? 'Hotel not found' : 'Unable to process request';
 
   res.status(statusCode).json({ success: false, message });
 });
