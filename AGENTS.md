@@ -63,6 +63,7 @@ Every endpoint you add or change gets tests for the success case and each rule's
 - Commits: [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `test:`, `docs:`, `refactor:`, `chore:`, `ci:`), small and focused. Scope optional, e.g. `feat(bookings): limit stays to 3 nights`.
 - Commit under your own git identity (your name and the email on your GitHub account) so the GitHub Contributors graph shows who did what. No co-author trailers or tool attribution lines in commits or PR descriptions.
 - In the same PR, update your card in `docs/tasks.md` (status, branch, PR link). Only edit your own cards.
+- Take turns. A and B open PRs alternately: if the newest PR in the repo is yours, wait for the other person's next PR before opening another feature PR. Only exception: the other person has no card they can start. Merge in the same alternating order where possible, so `main` and the Contributors graph show both people working throughout.
 
 ## Versioning
 
