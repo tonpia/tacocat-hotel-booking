@@ -1,0 +1,91 @@
+{
+  "info": {
+    "name": "00 Smoke",
+    "description": "Minimal checks that the API starts and auth works. Keep these passing.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get me without a token is 401",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('401 without token', () => pm.response.to.have.status(401));",
+              "pm.test('success is false', () => pm.expect(pm.response.json().success).to.eql(false));"
+            ]
+          }
+        }
+      ],
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/auth/me" }
+    },
+    {
+      "name": "Login admin",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('200 on login', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('returns a token', () => pm.expect(body.token).to.be.a('string'));",
+              "pm.environment.set('adminToken', body.token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"email\": \"{{adminEmail}}\", \"password\": \"{{adminPassword}}\" }"
+        },
+        "url": "{{baseUrl}}/api/v1/auth/login"
+      }
+    },
+    {
+      "name": "Get me as admin",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));",
+              "pm.test('role is admin', () => pm.expect(pm.response.json().data.role).to.eql('admin'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+        "url": "{{baseUrl}}/api/v1/auth/me"
+      }
+    },
+    {
+      "name": "Login with wrong password fails",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('4xx on bad password', () => pm.expect(pm.response.code).to.be.within(400, 401));",
+              "pm.test('no token', () => pm.expect(pm.response.json().token).to.be.undefined);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"email\": \"{{user1Email}}\", \"password\": \"wrong-password\" }"
+        },
+        "url": "{{baseUrl}}/api/v1/auth/login"
+      }
+    }
+  ]
+}

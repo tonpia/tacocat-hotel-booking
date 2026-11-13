@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+  version:
+    name: version
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Version is valid semver, not lower than main, and has a changelog entry
+        run: |
+          set -e
+          head=$(node -p "require('./package.json').version")
+          base=$(git show origin/${{ github.base_ref }}:package.json | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")
+          echo "base=$base head=$head"
+          echo "$head" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$' || { echo "::error::package.json version $head is not semver"; exit 1; }
+          lowest=$(printf '%s\n%s\n' "$base" "$head" | sort -V | head -1)
+          if [ "$lowest" != "$base" ]; then echo "::error::version $head is lower than ${{ github.base_ref }} ($base)"; exit 1; fi
+          if [ "$head" != "$base" ]; then
+            grep -q "^## \[$head\]" CHANGELOG.md || { echo "::error::CHANGELOG.md has no '## [$head]' section"; exit 1; }
+          fi
