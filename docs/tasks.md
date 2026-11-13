@@ -1,8 +1,8 @@
 # Task board
 
-Status: `todo`, `doing`, `review` (PR open), `done` (merged), `blocked` (reason in Notes).
+Status: `todo`, `doing` (work started, not finished), `done` (set in the card's own PR, which auto-merges when CI passes), `blocked` (reason in Notes).
 Type: `code` cards are done in this repo through PRs; `human` cards are done by the owner outside the repo (recording, slides, deploy settings).
-Edit only your own rows. A card can start when everything in "Depends on" is `done`, or is in `review` (then stack your branch on it, see `AGENTS.md`).
+Edit only your own rows. A card can start when everything in "Depends on" is `done`.
 
 ## Person A: base system
 

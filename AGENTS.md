@@ -57,10 +57,10 @@ Every endpoint you add or change gets tests for the success case and each rule's
 
 ## Git workflow
 
-- Never push to `main`. Branch from `main`, open a PR to `main`, the other person reviews, and the author merges it.
-- Merging: the author squash-merges their own PR (delete the branch) when all of these hold: it targets `main`; CI passes; and either the other person reviewed the latest commit and every problem they raised is fixed or answered, or the PR has had no review for 8 hours. Just before merging, set the card to `done` in `docs/tasks.md` on the PR branch and wait for CI again. Merge a stacked PR only after its base PR is merged and it has been retargeted to `main`.
+- Never push to `main`. Branch from `main` and open a PR to `main`. No review is required.
+- Merging: turn on auto-merge as soon as the PR is open (`gh pr merge <number> --auto --squash --delete-branch`). GitHub squash-merges it as soon as the required checks `test` and `version` pass. If a check fails, fix it on the branch; the PR merges once it is green. Set your card to `done` in `docs/tasks.md` in the PR itself, since it merges without further steps.
 - Branch names: `a/<card-id>-<slug>` or `b/<card-id>-<slug>`, e.g. `a/A4-booking-crud`.
-- If your card depends on a card that is still in review, branch from that card's branch and open your PR against it (a stacked PR). GitHub retargets it to `main` when the base PR is merged.
+- Start a card only when everything in its "Depends on" column is `done` (merged). PRs merge within minutes of passing CI, so there is no need to stack branches.
 - Commits: [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `test:`, `docs:`, `refactor:`, `chore:`, `ci:`), small and focused. Scope optional, e.g. `feat(bookings): limit stays to 3 nights`.
 - Commit under your own git identity (your name and the email on your GitHub account) so the GitHub Contributors graph shows who did what. No co-author trailers or tool attribution lines in commits or PR descriptions.
 - In the same PR, update your card in `docs/tasks.md` (status, branch, PR link). Only edit your own cards.
