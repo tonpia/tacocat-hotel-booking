@@ -57,12 +57,14 @@ Every endpoint you add or change gets tests for the success case and each rule's
 
 ## Git workflow
 
-- Never push to `main`. Branch from `main`, open a PR to `main`, the other person reviews, a human merges.
+- Never push to `main`. Branch from `main`, open a PR to `main`, the other person reviews, and the author merges it.
+- Merging: the author squash-merges their own PR (delete the branch) when all of these hold: it targets `main`; CI passes; and either the other person reviewed the latest commit and every problem they raised is fixed or answered, or the PR has had no review for 8 hours. Just before merging, set the card to `done` in `docs/tasks.md` on the PR branch and wait for CI again. Merge a stacked PR only after its base PR is merged and it has been retargeted to `main`.
 - Branch names: `a/<card-id>-<slug>` or `b/<card-id>-<slug>`, e.g. `a/A4-booking-crud`.
 - If your card depends on a card that is still in review, branch from that card's branch and open your PR against it (a stacked PR). GitHub retargets it to `main` when the base PR is merged.
 - Commits: [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `test:`, `docs:`, `refactor:`, `chore:`, `ci:`), small and focused. Scope optional, e.g. `feat(bookings): limit stays to 3 nights`.
 - Commit under your own git identity (your name and the email on your GitHub account) so the GitHub Contributors graph shows who did what. No co-author trailers or tool attribution lines in commits or PR descriptions.
 - In the same PR, update your card in `docs/tasks.md` (status, branch, PR link). Only edit your own cards.
+- Take turns. A and B open PRs alternately: if the newest PR in the repo is yours, wait for the other person's next PR before opening another feature PR. Only exception: the other person has no card they can start. Merge in the same alternating order where possible, so `main` and the Contributors graph show both people working throughout.
 
 ## Versioning
 
