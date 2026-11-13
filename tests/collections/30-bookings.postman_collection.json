@@ -6,6 +6,51 @@
   },
   "item": [
     {
+      "name": "List bookings without token is 401",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 401', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/bookings",
+        "header": []
+      }
+    },
+    {
+      "name": "Create booking without token is 401",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 401', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/hotels/{{hotel1Id}}/bookings",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"apptDate\": \"2026-12-01\"}"
+        }
+      }
+    },
+    {
       "name": "Login admin",
       "event": [
         {
@@ -58,51 +103,6 @@
         "body": {
           "mode": "raw",
           "raw": "{\"email\": \"{{user1Email}}\", \"password\": \"{{user1Password}}\"}"
-        }
-      }
-    },
-    {
-      "name": "List bookings without token is 401",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('status 401', () => pm.response.to.have.status(401));"
-            ]
-          }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "url": "{{baseUrl}}/api/v1/bookings",
-        "header": []
-      }
-    },
-    {
-      "name": "Create booking without token is 401",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('status 401', () => pm.response.to.have.status(401));"
-            ]
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "url": "{{baseUrl}}/api/v1/hotels/{{hotel1Id}}/bookings",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\"apptDate\": \"2026-12-01\"}"
         }
       }
     },

@@ -6,6 +6,33 @@
   },
   "item": [
     {
+      "name": "Create hotel without token is 401",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 401', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/hotels",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\": \"New Hotel\", \"address\": \"5 Test Road\", \"tel\": \"020000000\"}"
+        }
+      }
+    },
+    {
       "name": "Login admin",
       "event": [
         {
@@ -97,33 +124,6 @@
         "method": "GET",
         "url": "{{baseUrl}}/api/v1/hotels/{{hotel1Id}}",
         "header": []
-      }
-    },
-    {
-      "name": "Create hotel without token is 401",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('status 401', () => pm.response.to.have.status(401));"
-            ]
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "url": "{{baseUrl}}/api/v1/hotels",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\"name\": \"New Hotel\", \"address\": \"5 Test Road\", \"tel\": \"020000000\"}"
-        }
       }
     },
     {
