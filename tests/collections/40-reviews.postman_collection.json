@@ -1,0 +1,243 @@
+{
+  "info": {
+    "name": "40 Reviews",
+    "description": "Hotel review feature (R1 to R5). B1: Review model rules and hotel averageRating/reviewCount.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Review model rejects invalid reviews (R1, R2)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const r = JSON.parse(pm.environment.get('reviewModelRejects'));",
+              "pm.test('rating 0 is rejected', () => pm.expect(r.rating0).to.eql('ValidationError'));",
+              "pm.test('rating 6 is rejected', () => pm.expect(r.rating6).to.eql('ValidationError'));",
+              "pm.test('rating 3.5 is rejected', () => pm.expect(r.rating3point5).to.eql('ValidationError'));",
+              "pm.test('missing rating is rejected', () => pm.expect(r.ratingMissing).to.eql('ValidationError'));",
+              "pm.test('comment over 1000 characters is rejected', () => pm.expect(r.comment1001).to.eql('ValidationError'));",
+              "pm.test('second review for the same booking is rejected by the unique index', () => pm.expect(r.sameBooking).to.eql('DuplicateKey'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{hotel2Id}}",
+        "header": []
+      }
+    },
+    {
+      "name": "Average after creating ratings 4, 5, 2 is 3.7 of 3",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const s = JSON.parse(pm.environment.get('hotel2StatsAfterCreate'));",
+              "pm.test('averageRating 3.7', () => pm.expect(s.averageRating).to.eql(3.7));",
+              "pm.test('reviewCount 3', () => pm.expect(s.reviewCount).to.eql(3));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{hotel2Id}}",
+        "header": []
+      }
+    },
+    {
+      "name": "Average after editing 2 to 3 (save) is 4 of 3",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const s = JSON.parse(pm.environment.get('hotel2StatsAfterEdit'));",
+              "pm.test('averageRating 4', () => pm.expect(s.averageRating).to.eql(4));",
+              "pm.test('reviewCount 3', () => pm.expect(s.reviewCount).to.eql(3));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{hotel2Id}}",
+        "header": []
+      }
+    },
+    {
+      "name": "Average after editing 3 to 1 (findByIdAndUpdate) is 3.3 of 3",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const s = JSON.parse(pm.environment.get('hotel2StatsAfterQueryEdit'));",
+              "pm.test('averageRating 3.3', () => pm.expect(s.averageRating).to.eql(3.3));",
+              "pm.test('reviewCount 3', () => pm.expect(s.reviewCount).to.eql(3));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{hotel2Id}}",
+        "header": []
+      }
+    },
+    {
+      "name": "Average after deleting the 5 is 2.5 of 2",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const s = JSON.parse(pm.environment.get('hotel2StatsAfterDelete'));",
+              "pm.test('averageRating 2.5', () => pm.expect(s.averageRating).to.eql(2.5));",
+              "pm.test('reviewCount 2', () => pm.expect(s.reviewCount).to.eql(2));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{hotel2Id}}",
+        "header": []
+      }
+    },
+    {
+      "name": "Rejected reviews do not change the average",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const s = JSON.parse(pm.environment.get('hotel2StatsAfterRejects'));",
+              "pm.test('averageRating 2.5', () => pm.expect(s.averageRating).to.eql(2.5));",
+              "pm.test('reviewCount 2', () => pm.expect(s.reviewCount).to.eql(2));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{hotel2Id}}",
+        "header": []
+      }
+    },
+    {
+      "name": "GET /hotels/:id shows averageRating and reviewCount (R4)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const h = pm.response.json().data;",
+              "pm.test('averageRating 2.5', () => pm.expect(h.averageRating).to.eql(2.5));",
+              "pm.test('reviewCount 2', () => pm.expect(h.reviewCount).to.eql(2));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{hotel2Id}}",
+        "header": []
+      }
+    },
+    {
+      "name": "Hotel without reviews has averageRating null and reviewCount 0",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const h = pm.response.json().data;",
+              "pm.test('averageRating null', () => pm.expect(h.averageRating).to.eql(null));",
+              "pm.test('reviewCount 0', () => pm.expect(h.reviewCount).to.eql(0));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{hotel1Id}}",
+        "header": []
+      }
+    },
+    {
+      "name": "Login admin",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.environment.set('adminToken', pm.response.json().token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/auth/login",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\": \"{{adminEmail}}\", \"password\": \"{{adminPassword}}\"}"
+        }
+      }
+    },
+    {
+      "name": "New hotel starts with averageRating null and reviewCount 0",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 201', () => pm.response.to.have.status(201));",
+              "const h = pm.response.json().data;",
+              "pm.test('averageRating null', () => pm.expect(h.averageRating).to.eql(null));",
+              "pm.test('reviewCount 0', () => pm.expect(h.reviewCount).to.eql(0));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/hotels",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\": \"Review Test Hotel\", \"address\": \"7 Test Road\", \"tel\": \"020000007\"}"
+        }
+      }
+    }
+  ]
+}

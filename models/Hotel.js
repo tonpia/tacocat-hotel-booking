@@ -33,6 +33,15 @@ const hotelSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    //Kept up to date by Review.calcAverageRating after every review change
+    averageRating: {
+      type: Number,
+      default: null,
+    },
+    reviewCount: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     versionKey: false,
@@ -44,6 +53,13 @@ const hotelSchema = new mongoose.Schema(
 //Reverse populate with virtuals
 hotelSchema.virtual('bookings', {
   ref: 'Booking',
+  localField: '_id',
+  foreignField: 'hotel',
+  justOne: false,
+});
+
+hotelSchema.virtual('reviews', {
+  ref: 'Review',
   localField: '_id',
   foreignField: 'hotel',
   justOne: false,
