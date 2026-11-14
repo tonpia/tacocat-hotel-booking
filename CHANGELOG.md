@@ -2,6 +2,12 @@
 
 All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Add new versions at the top.
 
+## [0.5.0] - 2026-11-14
+
+### Added
+- `GET /api/v1/hotels/:hotelId/reviews` (B4, R4): public list of a hotel's reviews, newest first, with the reviewer's name only, plus `count` and `averageRating` (1 decimal, `null` when the hotel has no reviews). A missing or invalid hotel id gives 404.
+- Postman tests in `40-reviews` for the hotel review list: averages and counts, only that hotel's reviews, public access, empty hotel, 404 cases.
+
 ## [0.4.0] - 2026-11-14
 
 ### Added
