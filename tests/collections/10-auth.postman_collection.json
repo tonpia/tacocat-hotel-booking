@@ -1,0 +1,487 @@
+{
+  "info": {
+    "name": "10 Auth",
+    "description": "Register, login, me and logout (A2).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Register ok is 201 with token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 201', () => pm.response.to.have.status(201));",
+              "const j = pm.response.json(); pm.test('token returned', () => { pm.expect(j.success).to.eql(true); pm.expect(j.token).to.be.a('string'); });",
+              "pm.environment.set('newToken', j.token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/auth/register",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\": \"New User\", \"tel\": \"0833333333\", \"email\": \"newuser@test.com\", \"password\": \"newpass123\"}"
+        }
+      }
+    },
+    {
+      "name": "Me returns tel",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('tel saved', () => pm.expect(pm.response.json().data.tel).to.eql('0833333333'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/auth/me",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{newToken}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Register missing tel is 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('success false with message', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect(j.message).to.be.a('string'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/auth/register",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\": \"X\", \"email\": \"x1@test.com\", \"password\": \"abcdef1\"}"
+        }
+      }
+    },
+    {
+      "name": "Register missing name is 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('success false with message', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect(j.message).to.be.a('string'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/auth/register",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"tel\": \"0811\", \"email\": \"x2@test.com\", \"password\": \"abcdef1\"}"
+        }
+      }
+    },
+    {
+      "name": "Register missing email is 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('success false with message', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect(j.message).to.be.a('string'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/auth/register",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\": \"X\", \"tel\": \"0811\", \"password\": \"abcdef1\"}"
+        }
+      }
+    },
+    {
+      "name": "Register missing password is 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('success false with message', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect(j.message).to.be.a('string'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/auth/register",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\": \"X\", \"tel\": \"0811\", \"email\": \"x3@test.com\"}"
+        }
+      }
+    },
+    {
+      "name": "Register invalid email is 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('success false with message', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect(j.message).to.be.a('string'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/auth/register",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\": \"X\", \"tel\": \"0811\", \"email\": \"not-an-email\", \"password\": \"abcdef1\"}"
+        }
+      }
+    },
+    {
+      "name": "Register short password is 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('success false with message', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect(j.message).to.be.a('string'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/auth/register",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\": \"X\", \"tel\": \"0811\", \"email\": \"x4@test.com\", \"password\": \"12345\"}"
+        }
+      }
+    },
+    {
+      "name": "Register duplicate email is 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('success false with message', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect(j.message).to.be.a('string'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/auth/register",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\": \"New User\", \"tel\": \"0833333333\", \"email\": \"newuser@test.com\", \"password\": \"newpass123\"}"
+        }
+      }
+    },
+    {
+      "name": "Login ok is 200 with token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('token returned', () => pm.expect(pm.response.json().token).to.be.a('string'));",
+              "pm.test('token cookie set', () => pm.expect(pm.response.headers.get('Set-Cookie')).to.include('token='));",
+              "pm.environment.set('user1Token', pm.response.json().token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/auth/login",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\": \"{{user1Email}}\", \"password\": \"{{user1Password}}\"}"
+        }
+      }
+    },
+    {
+      "name": "Login wrong password is 401",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 401', () => pm.response.to.have.status(401));",
+              "pm.test('success false with message', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect(j.message).to.be.a('string'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/auth/login",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\": \"{{user1Email}}\", \"password\": \"wrongpass\"}"
+        }
+      }
+    },
+    {
+      "name": "Login unknown email is 401",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 401', () => pm.response.to.have.status(401));",
+              "pm.test('success false with message', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect(j.message).to.be.a('string'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/auth/login",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\": \"nobody@test.com\", \"password\": \"whatever1\"}"
+        }
+      }
+    },
+    {
+      "name": "Login without password is 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('success false with message', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect(j.message).to.be.a('string'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/auth/login",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\": \"{{user1Email}}\"}"
+        }
+      }
+    },
+    {
+      "name": "Me with invalid token (cookie jar may hold a token) is 401",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 401', () => pm.response.to.have.status(401));",
+              "pm.test('success false with message', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect(j.message).to.be.a('string'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/auth/me",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer invalid"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Me with token is 200",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('is user1', () => pm.expect(pm.response.json().data.email).to.eql(pm.environment.get('user1Email')));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/auth/me",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{user1Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Logout with invalid token (cookie jar may hold a token) is 401",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 401', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/auth/logout",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer invalid"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Logout clears cookie",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('cookie cleared', () => pm.expect(pm.response.headers.get('Set-Cookie')).to.include('token=none'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/auth/logout",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{user1Token}}"
+          }
+        ]
+      }
+    }
+  ]
+}
