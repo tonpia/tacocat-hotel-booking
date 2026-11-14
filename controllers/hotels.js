@@ -92,9 +92,16 @@ exports.getHotel = async (req, res, next) => {
   }
 };
 
+//averageRating and reviewCount are only ever set by Review.calcAverageRating
+//(R4), so they are dropped from the body of create and update
+function hotelFields(body) {
+  const { averageRating, reviewCount, ...fields } = body || {};
+  return fields;
+}
+
 exports.createHotel = async (req, res, next) => {
   try {
-    const hotel = await Hotel.create(req.body);
+    const hotel = await Hotel.create(hotelFields(req.body));
 
     return res.status(201).json({ success: true, data: hotel });
   } catch (error) {
@@ -107,7 +114,7 @@ exports.createHotel = async (req, res, next) => {
 
 exports.updateHotel = async (req, res, next) => {
   try {
-    const hotel = await Hotel.findByIdAndUpdate(req.params.id, req.body, {
+    const hotel = await Hotel.findByIdAndUpdate(req.params.id, hotelFields(req.body), {
       new: true,
       runValidators: true,
     });
