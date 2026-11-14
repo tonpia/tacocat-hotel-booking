@@ -2,6 +2,14 @@
 
 All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Add new versions at the top.
 
+## [0.3.0] - 2026-11-14
+
+### Added
+- Review model (B1): `user`, `hotel`, `booking` (unique index, one review per booking), `rating` (whole number 1 to 5, required), `comment` (max 1000 characters), `createdAt`, `updatedAt`.
+- `Review.calcAverageRating(hotelId)` runs after every review save, update and delete and keeps the hotel's rating up to date.
+- Hotel `averageRating` (1 decimal, `null` when no reviews) and `reviewCount` (default 0), shown by `GET /hotels/:id`; `reviews` virtual on Hotel.
+- Postman collection `40-reviews` and fixture `40-reviews.js` covering the model rules and the average after create, edit and delete.
+
 ## [0.2.0] - 2026-11-13
 
 ### Changed
