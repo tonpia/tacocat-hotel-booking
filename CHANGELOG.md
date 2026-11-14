@@ -2,6 +2,16 @@
 
 All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Add new versions at the top.
 
+## [0.9.0] - 2026-11-15
+
+### Added
+- B5 (R5): an admin can `DELETE /api/v1/reviews/:id` for any review (200). Other users still get 403 on someone else's review; editing stays owner only (admin 403).
+- Deleting a booking (owner or admin) deletes its review, and the hotel's `averageRating` and `reviewCount` are recalculated.
+- Postman tests in `40-reviews` for admin delete (200, 404 after, 403 for a non-admin), the booking and hotel cascades (review gone, averages correct, other hotels unchanged) and the stats fields on the hotel endpoints. Hotel delete removing its reviews (added in A5) is now tested.
+
+### Fixed
+- `POST` and `PUT /api/v1/hotels` ignore `averageRating` and `reviewCount` in the body, so an admin can no longer overwrite the review stats by hand (R4).
+
 ## [0.8.1] - 2026-11-15
 
 ### Fixed

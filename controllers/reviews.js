@@ -225,17 +225,17 @@ exports.updateReview = async (req, res, next) => {
   }
 };
 
-//@desc     Delete your own review (R3)
+//@desc     Delete your own review (R3); admin deletes any review (R5)
 //@route    DELETE /api/v1/reviews/:id
-//@access   Private (review owner)
+//@access   Private (review owner or admin)
 exports.deleteReview = async (req, res, next) => {
   try {
     const review = await findReview(req.params.id);
 
     if (!review) return reviewNotFound(res);
 
-    //R3: the owner deletes their own review (admin delete of any review is R5, card B5)
-    if (review.user.toString() !== req.user.id) {
+    //R3: the owner deletes their own review; R5: an admin deletes any review
+    if (review.user.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({
         success: false,
         message: 'You can only delete your own reviews',

@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "40 Reviews",
-    "description": "Hotel review feature (R1 to R5). B1: Review model rules and hotel averageRating/reviewCount. B4: public GET /hotels/:hotelId/reviews. B2: POST /bookings/:bookingId/reviews. B3: GET /reviews (own, admin all), GET /reviews/:id, PUT and DELETE /reviews/:id (owner).",
+    "description": "Hotel review feature (R1 to R5). B1: Review model rules and hotel averageRating/reviewCount. B4: public GET /hotels/:hotelId/reviews. B2: POST /bookings/:bookingId/reviews. B3: GET /reviews (own, admin all), GET /reviews/:id, PUT and DELETE /reviews/:id (owner). B5: admin DELETE /reviews/:id (R5); deleting a booking deletes its review and deleting a hotel deletes its reviews, with averages kept correct; averageRating and reviewCount cannot be set through the hotel endpoints.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -2123,6 +2123,797 @@
         "method": "GET",
         "url": "{{baseUrl}}/api/v1/hotels/{{reviewHotelId}}",
         "header": []
+      }
+    },
+    {
+      "name": "B5 setup: reviewer1 reviews adminHotel booking, rating 5",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 201', () => pm.response.to.have.status(201));",
+              "pm.environment.set('adminR1ReviewId', pm.response.json().data._id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/bookings/{{adminR1BookingId}}/reviews",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\": 5, \"comment\": \"B5 review rated 5\"}"
+        }
+      }
+    },
+    {
+      "name": "B5 setup: reviewer2 reviews adminHotel booking, rating 2",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 201', () => pm.response.to.have.status(201));",
+              "pm.environment.set('adminR2ReviewId', pm.response.json().data._id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/bookings/{{adminR2BookingId}}/reviews",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer2Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\": 2, \"comment\": \"B5 review rated 2\"}"
+        }
+      }
+    },
+    {
+      "name": "B5 setup: reviewer1 reviews second adminHotel booking, rating 4",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 201', () => pm.response.to.have.status(201));",
+              "pm.environment.set('adminR1SecondReviewId', pm.response.json().data._id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/bookings/{{adminR1SecondBookingId}}/reviews",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\": 4, \"comment\": \"B5 review rated 4\"}"
+        }
+      }
+    },
+    {
+      "name": "B5 setup: reviewer2 reviews cascadeHotel booking, rating 1",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 201', () => pm.response.to.have.status(201));",
+              "pm.environment.set('cascadeR2ReviewId', pm.response.json().data._id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/bookings/{{cascadeR2BookingId}}/reviews",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer2Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\": 1, \"comment\": \"B5 review rated 1\"}"
+        }
+      }
+    },
+    {
+      "name": "Average after three reviews is 3.7 of 3 (R4)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const h = pm.response.json().data;",
+              "pm.test('averageRating 3.7', () => pm.expect(h.averageRating).to.eql(3.7));",
+              "pm.test('reviewCount 3', () => pm.expect(h.reviewCount).to.eql(3));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{adminHotelId}}",
+        "header": []
+      }
+    },
+    {
+      "name": "DELETE review: another user (not admin) gives 403 (R5)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 403', () => pm.response.to.have.status(403));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/reviews/{{adminR1ReviewId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{user1Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Failed deletes do not change the average (3.7 of 3)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const h = pm.response.json().data;",
+              "pm.test('averageRating 3.7', () => pm.expect(h.averageRating).to.eql(3.7));",
+              "pm.test('reviewCount 3', () => pm.expect(h.reviewCount).to.eql(3));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{adminHotelId}}",
+        "header": []
+      }
+    },
+    {
+      "name": "DELETE review: admin deletes a user's review, 200 (R5)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('success true, empty data', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(true); pm.expect(b.data).to.eql({}); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/reviews/{{adminR1ReviewId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GET /reviews/:id after admin delete gives 404 (R5)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/reviews/{{adminR1ReviewId}}",
+        "header": []
+      }
+    },
+    {
+      "name": "Average after admin deletes the 5 is 3 of 2 (R4, R5)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const h = pm.response.json().data;",
+              "pm.test('averageRating 3', () => pm.expect(h.averageRating).to.eql(3));",
+              "pm.test('reviewCount 2', () => pm.expect(h.reviewCount).to.eql(2));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{adminHotelId}}",
+        "header": []
+      }
+    },
+    {
+      "name": "DELETE review: admin deleting it again gives 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/reviews/{{adminR1ReviewId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DELETE review: admin with a missing review id gives 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/reviews/5f0000000000000000000000",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PUT review: admin still cannot edit a user's review, 403 (R3)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 403', () => pm.response.to.have.status(403));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/reviews/{{adminR2ReviewId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\": 5}"
+        }
+      }
+    },
+    {
+      "name": "GET /reviews: reviewer1 no longer sees the review the admin deleted (R3, R5)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const b = pm.response.json();",
+              "pm.test('only the second adminHotel review left', () => { pm.expect(b.count).to.eql(1); pm.expect(b.data[0]._id).to.eql(pm.environment.get('adminR1SecondReviewId')); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/reviews",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DELETE booking: owner deletes a reviewed booking, 200 (cascade)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/bookings/{{adminR1SecondBookingId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Deleting a booking deletes its review",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/reviews/{{adminR1SecondReviewId}}",
+        "header": []
+      }
+    },
+    {
+      "name": "Average after the booking delete is 2 of 1 (R4)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const h = pm.response.json().data;",
+              "pm.test('averageRating 2', () => pm.expect(h.averageRating).to.eql(2));",
+              "pm.test('reviewCount 1', () => pm.expect(h.reviewCount).to.eql(1));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{adminHotelId}}",
+        "header": []
+      }
+    },
+    {
+      "name": "DELETE booking: admin deletes a user's reviewed booking, 200 (cascade)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/bookings/{{adminR2BookingId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Admin deleting a booking deletes its review",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/reviews/{{adminR2ReviewId}}",
+        "header": []
+      }
+    },
+    {
+      "name": "Hotel with no reviews left after booking deletes: averageRating null, reviewCount 0 (R4)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const h = pm.response.json().data;",
+              "pm.test('averageRating null', () => pm.expect(h.averageRating).to.eql(null));",
+              "pm.test('reviewCount 0', () => pm.expect(h.reviewCount).to.eql(0));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{adminHotelId}}",
+        "header": []
+      }
+    },
+    {
+      "name": "GET /hotels/:hotelId/reviews after booking deletes: count 0, averageRating null (R4)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const b = pm.response.json();",
+              "pm.test('count 0, averageRating null, empty list', () => { pm.expect(b.count).to.eql(0); pm.expect(b.averageRating).to.eql(null); pm.expect(b.data).to.eql([]); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{adminHotelId}}/reviews",
+        "header": []
+      }
+    },
+    {
+      "name": "DELETE booking: a booking whose review was already deleted, 200",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/bookings/{{adminR1BookingId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "cascadeHotel has 1 of 1 before the delete",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const h = pm.response.json().data;",
+              "pm.test('averageRating 1', () => pm.expect(h.averageRating).to.eql(1));",
+              "pm.test('reviewCount 1', () => pm.expect(h.reviewCount).to.eql(1));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{cascadeHotelId}}",
+        "header": []
+      }
+    },
+    {
+      "name": "hotel3 has 5 of 1 before the delete",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const h = pm.response.json().data;",
+              "pm.test('averageRating 5', () => pm.expect(h.averageRating).to.eql(5));",
+              "pm.test('reviewCount 1', () => pm.expect(h.reviewCount).to.eql(1));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{hotel3Id}}",
+        "header": []
+      }
+    },
+    {
+      "name": "DELETE hotel: admin deletes a hotel with a review, 200 (cascade)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/hotels/{{cascadeHotelId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Deleting a hotel deletes its reviews",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/reviews/{{cascadeR2ReviewId}}",
+        "header": []
+      }
+    },
+    {
+      "name": "Deleting a hotel deletes its bookings",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/bookings/{{cascadeR2BookingId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GET /hotels/:hotelId/reviews for the deleted hotel gives 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{cascadeHotelId}}/reviews",
+        "header": []
+      }
+    },
+    {
+      "name": "GET /reviews: reviewer2's reviews are all gone after the cascades",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('count 0', () => pm.expect(pm.response.json().count).to.eql(0));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/reviews",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer2Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Other hotels keep their average after the hotel delete (hotel3 5 of 1)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const h = pm.response.json().data;",
+              "pm.test('averageRating 5', () => pm.expect(h.averageRating).to.eql(5));",
+              "pm.test('reviewCount 1', () => pm.expect(h.reviewCount).to.eql(1));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{hotel3Id}}",
+        "header": []
+      }
+    },
+    {
+      "name": "PUT hotel: admin cannot overwrite averageRating or reviewCount (R4)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const h = pm.response.json().data;",
+              "pm.test('tel updated', () => pm.expect(h.tel).to.eql('020000033'));",
+              "pm.test('averageRating and reviewCount unchanged (5 of 1)', () => { pm.expect(h.averageRating).to.eql(5); pm.expect(h.reviewCount).to.eql(1); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/hotels/{{hotel3Id}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"tel\": \"020000033\", \"averageRating\": 1, \"reviewCount\": 99}"
+        }
+      }
+    },
+    {
+      "name": "Hotel stats are still 5 of 1 after the PUT (R4)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const h = pm.response.json().data;",
+              "pm.test('averageRating 5', () => pm.expect(h.averageRating).to.eql(5));",
+              "pm.test('reviewCount 1', () => pm.expect(h.reviewCount).to.eql(1));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{hotel3Id}}",
+        "header": []
+      }
+    },
+    {
+      "name": "POST hotel: averageRating and reviewCount in the body are ignored (R4)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 201', () => pm.response.to.have.status(201));",
+              "const h = pm.response.json().data;",
+              "pm.test('averageRating null, reviewCount 0', () => { pm.expect(h.averageRating).to.eql(null); pm.expect(h.reviewCount).to.eql(0); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/hotels",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\": \"Stats Body Hotel\", \"address\": \"7 Fixture Road\", \"tel\": \"020000007\", \"averageRating\": 4.5, \"reviewCount\": 10}"
+        }
       }
     }
   ]

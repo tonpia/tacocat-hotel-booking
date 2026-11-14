@@ -17,6 +17,14 @@
 //  reviewer1CheckOutLaterTodayBookingId  reviewer1, check-out in 1 hour: too early
 //  reviewer2PastBookingId     reviewer2, checked out 2 days ago: reviewable by reviewer2 only
 //
+//B5 (admin delete and cascades) uses two more hotels with past bookings only,
+//so its averages start from zero and do not touch reviewHotel:
+//  adminHotelId: reviewer1 (adminR1BookingId, adminR1SecondBookingId) and
+//    reviewer2 (adminR2BookingId), all checked out: reviews are made, then removed
+//    by an admin delete (R5) and by deleting their bookings
+//  cascadeHotelId: reviewer2 (cascadeR2BookingId), checked out: reviewed, then the
+//    hotel is deleted
+//
 //Left in the database for the collection:
 //  hotel1: no reviews
 //  hotel2: ratings 4 and 1 (user1), average 2.5 of 2
@@ -148,7 +156,31 @@ exports.seed = async (mongoose, base) => {
       stay(reviewer2.id, -2 * DAY),
     ]);
 
+  //B5: admin delete (R5) and cascades from booking and hotel deletes
+  const [adminHotel, cascadeHotel] = await Hotel.create([
+    { name: 'Admin Delete Hotel', address: '5 Fixture Road', tel: '020000005' },
+    { name: 'Cascade Delete Hotel', address: '6 Fixture Road', tel: '020000006' },
+  ]);
+  const pastStay = (userId, hotelId) => ({
+    user: userId,
+    hotel: hotelId,
+    checkInDate: new Date(now - 4 * DAY),
+    checkOutDate: new Date(now - 2 * DAY),
+  });
+  const [adminR1, adminR1Second, adminR2, cascadeR2] = await Booking.create([
+    pastStay(reviewer1.id, adminHotel.id),
+    pastStay(reviewer1.id, adminHotel.id),
+    pastStay(reviewer2.id, adminHotel.id),
+    pastStay(reviewer2.id, cascadeHotel.id),
+  ]);
+
   return {
+    adminHotelId: adminHotel.id,
+    cascadeHotelId: cascadeHotel.id,
+    adminR1BookingId: adminR1.id,
+    adminR1SecondBookingId: adminR1Second.id,
+    adminR2BookingId: adminR2.id,
+    cascadeR2BookingId: cascadeR2.id,
     reviewModelRejects: JSON.stringify(rejects),
     hotel2StatsAfterCreate: statsAfterCreate,
     hotel2StatsAfterEdit: statsAfterEdit,
