@@ -2,6 +2,12 @@
 
 All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Add new versions at the top.
 
+## [0.7.0] - 2026-11-15
+
+### Added
+- `POST /api/v1/bookings/:bookingId/reviews` (B2, R1, R2): the booking's owner rates the hotel (whole number 1 to 5) with an optional comment, once the booking's `checkOutDate` has passed. `hotel` and `user` are taken from the booking, never from the body. Errors: 401 not logged in, 404 missing or invalid booking id, 403 not the booking's owner (admins included), 400 before check-out, 400 already reviewed, 400 bad rating or comment over 1000 characters. The hotel's `averageRating` and `reviewCount` update after each new review.
+- Postman tests in `40-reviews` for creating reviews, with bookings before and after check-out in `tests/fixtures/40-reviews.js`.
+
 ## [0.6.0] - 2026-11-14
 
 ### Changed
