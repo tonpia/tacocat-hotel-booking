@@ -595,7 +595,12 @@
       "request": {
         "method": "GET",
         "url": "{{baseUrl}}/api/v1/bookings/{{user1FutureBookingId}}",
-        "header": []
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer invalid"
+          }
+        ]
       }
     },
     {
@@ -755,7 +760,12 @@
       "request": {
         "method": "GET",
         "url": "{{baseUrl}}/api/v1/hotels/{{hotel2Id}}/bookings",
-        "header": []
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer invalid"
+          }
+        ]
       }
     },
     {
@@ -846,6 +856,10 @@
         "method": "PUT",
         "url": "{{baseUrl}}/api/v1/bookings/{{user1FutureBookingId}}",
         "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer invalid"
+          },
           {
             "key": "Content-Type",
             "value": "application/json"
@@ -1116,7 +1130,12 @@
       "request": {
         "method": "DELETE",
         "url": "{{baseUrl}}/api/v1/bookings/{{user1PastBookingId}}",
-        "header": []
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer invalid"
+          }
+        ]
       }
     },
     {
