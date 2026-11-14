@@ -80,8 +80,13 @@ async function importData() {
   await Hotel.create(readHotels());
   const admin = await User.create(ADMIN);
   await Booking.create(
-    ['2026-11-01', '2026-11-02', '2026-11-03'].map((apptDate) => ({
-      apptDate,
+    [
+      ['2026-11-01', '2026-11-02'],
+      ['2026-11-02', '2026-11-04'],
+      ['2026-11-03', '2026-11-06'],
+    ].map(([checkInDate, checkOutDate]) => ({
+      checkInDate,
+      checkOutDate,
       user: admin._id,
       hotel: APPT_HOTEL_ID,
     })),

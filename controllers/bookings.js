@@ -104,17 +104,6 @@ exports.addBooking = async (req, res, next) => {
     //Add user Id to req.body
     req.body.user = req.user.id;
 
-    //Check for existed booking
-    const existedBookings = await Booking.find({ user: req.user.id });
-
-    //If the user is not an admin, they can only create 3 bookings
-    if (existedBookings.length >= 3 && req.user.role !== 'admin') {
-      return res.status(400).json({
-        success: false,
-        message: `The user with ID ${req.user.id} has already made 3 bookings`,
-      });
-    }
-
     const booking = await Booking.create(req.body);
 
     res.status(201).json({
@@ -122,6 +111,9 @@ exports.addBooking = async (req, res, next) => {
       data: booking,
     });
   } catch (error) {
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ success: false, message: error.message });
+    }
     console.log(error);
     return res
       .status(500)
@@ -154,16 +146,20 @@ exports.updateBooking = async (req, res, next) => {
       });
     }
 
-    booking = await Booking.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    //Dates only; save() so the model's date rules see both dates
+    const { checkInDate, checkOutDate } = req.body;
+    if (checkInDate !== undefined) booking.checkInDate = checkInDate;
+    if (checkOutDate !== undefined) booking.checkOutDate = checkOutDate;
+    await booking.save();
 
     res.status(200).json({
       success: true,
       data: booking,
     });
   } catch (error) {
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ success: false, message: error.message });
+    }
     console.log(error);
     return res
       .status(500)

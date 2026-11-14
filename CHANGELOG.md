@@ -2,6 +2,20 @@
 
 All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Add new versions at the top.
 
+## [0.6.0] - 2026-11-14
+
+### Changed
+- BREAKING (A3, FR3): bookings use `checkInDate` and `checkOutDate` instead of `apptDate`. Check-out must be after check-in and the stay 1 to 3 nights; otherwise `POST /hotels/:hotelId/bookings` and `PUT /bookings/:id` return 400 with `{ success: false, message }`.
+- `PUT /bookings/:id` only updates the two dates and runs the date rules on both.
+
+### Added
+- Booking `nights` virtual (whole days between check-in and check-out), included in JSON.
+- Test fixtures: one future and one past-check-out booking for user1, one past-check-out booking for user2.
+- Postman tests in `30-bookings` for 1 and 3 nights (201) and 0 nights, 4 nights, check-out before check-in and missing dates (400).
+
+### Removed
+- The "max 3 bookings per user" rule; the limit is now 3 nights per booking.
+
 ## [0.5.0] - 2026-11-14
 
 ### Added
