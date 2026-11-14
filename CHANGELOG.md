@@ -2,6 +2,16 @@
 
 All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Add new versions at the top.
 
+## [0.8.0] - 2026-11-15
+
+### Added
+- B3 (R3, R4): `GET /api/v1/reviews` (login) lists the caller's own reviews, newest first, with the hotel's name; admins get all reviews.
+- `GET /api/v1/reviews/:id` (public) shows one review with the reviewer's name only and the hotel's name.
+- `PUT /api/v1/reviews/:id` (review owner only, admins included get 403) changes `rating` and/or `comment`; other body fields are ignored. Bad rating or comment over 1000 characters gives 400.
+- `DELETE /api/v1/reviews/:id` (review owner) deletes the review; someone else gets 403. Admin delete of any review follows in B5 (R5).
+- Missing or invalid review id gives 404. The hotel's `averageRating` and `reviewCount` are recalculated after every edit and delete.
+- Postman tests in `40-reviews` for the list (own only, admin all), view, edit and delete: 401, 403, 404 and 400 cases and the average after each change.
+
 ## [0.7.0] - 2026-11-15
 
 ### Added
