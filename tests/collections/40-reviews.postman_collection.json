@@ -20,7 +20,7 @@
       ],
       "request": {
         "method": "POST",
-        "url": "{{baseUrl}}/api/v1/bookings/{{user1PastBookingId}}/reviews",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer1PastBookingId}}/reviews",
         "header": [
           {
             "key": "Content-Type",
@@ -405,14 +405,14 @@
       }
     },
     {
-      "name": "Login user1",
+      "name": "Login reviewer1",
       "event": [
         {
           "listen": "test",
           "script": {
             "exec": [
               "pm.test('status 200', () => pm.response.to.have.status(200));",
-              "pm.environment.set('user1Token', pm.response.json().token);"
+              "pm.environment.set('reviewer1Token', pm.response.json().token);"
             ]
           }
         }
@@ -428,19 +428,19 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\"email\": \"{{user1Email}}\", \"password\": \"{{user1Password}}\"}"
+          "raw": "{\"email\": \"{{reviewer1Email}}\", \"password\": \"{{reviewer1Password}}\"}"
         }
       }
     },
     {
-      "name": "Login user2",
+      "name": "Login reviewer2",
       "event": [
         {
           "listen": "test",
           "script": {
             "exec": [
               "pm.test('status 200', () => pm.response.to.have.status(200));",
-              "pm.environment.set('user2Token', pm.response.json().token);"
+              "pm.environment.set('reviewer2Token', pm.response.json().token);"
             ]
           }
         }
@@ -456,7 +456,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\"email\": \"{{user2Email}}\", \"password\": \"{{user2Password}}\"}"
+          "raw": "{\"email\": \"{{reviewer2Email}}\", \"password\": \"{{reviewer2Password}}\"}"
         }
       }
     },
@@ -483,7 +483,7 @@
           },
           {
             "key": "Authorization",
-            "value": "Bearer {{user1Token}}"
+            "value": "Bearer {{reviewer1Token}}"
           }
         ],
         "body": {
@@ -515,7 +515,7 @@
           },
           {
             "key": "Authorization",
-            "value": "Bearer {{user1Token}}"
+            "value": "Bearer {{reviewer1Token}}"
           }
         ],
         "body": {
@@ -539,7 +539,7 @@
       ],
       "request": {
         "method": "POST",
-        "url": "{{baseUrl}}/api/v1/bookings/{{user2PastBookingId}}/reviews",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer2PastBookingId}}/reviews",
         "header": [
           {
             "key": "Content-Type",
@@ -547,7 +547,7 @@
           },
           {
             "key": "Authorization",
-            "value": "Bearer {{user1Token}}"
+            "value": "Bearer {{reviewer1Token}}"
           }
         ],
         "body": {
@@ -571,7 +571,7 @@
       ],
       "request": {
         "method": "POST",
-        "url": "{{baseUrl}}/api/v1/bookings/{{user2PastBookingId}}/reviews",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer2PastBookingId}}/reviews",
         "header": [
           {
             "key": "Content-Type",
@@ -603,7 +603,7 @@
       ],
       "request": {
         "method": "POST",
-        "url": "{{baseUrl}}/api/v1/bookings/{{user1FutureBookingId}}/reviews",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer1FutureBookingId}}/reviews",
         "header": [
           {
             "key": "Content-Type",
@@ -611,7 +611,7 @@
           },
           {
             "key": "Authorization",
-            "value": "Bearer {{user1Token}}"
+            "value": "Bearer {{reviewer1Token}}"
           }
         ],
         "body": {
@@ -635,7 +635,7 @@
       ],
       "request": {
         "method": "POST",
-        "url": "{{baseUrl}}/api/v1/bookings/{{user1CheckOutLaterTodayBookingId}}/reviews",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer1CheckOutLaterTodayBookingId}}/reviews",
         "header": [
           {
             "key": "Content-Type",
@@ -643,7 +643,7 @@
           },
           {
             "key": "Authorization",
-            "value": "Bearer {{user1Token}}"
+            "value": "Bearer {{reviewer1Token}}"
           }
         ],
         "body": {
@@ -667,7 +667,7 @@
       ],
       "request": {
         "method": "POST",
-        "url": "{{baseUrl}}/api/v1/bookings/{{user1PastBookingId}}/reviews",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer1PastBookingId}}/reviews",
         "header": [
           {
             "key": "Content-Type",
@@ -675,7 +675,7 @@
           },
           {
             "key": "Authorization",
-            "value": "Bearer {{user1Token}}"
+            "value": "Bearer {{reviewer1Token}}"
           }
         ],
         "body": {
@@ -699,7 +699,7 @@
       ],
       "request": {
         "method": "POST",
-        "url": "{{baseUrl}}/api/v1/bookings/{{user1PastBookingId}}/reviews",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer1PastBookingId}}/reviews",
         "header": [
           {
             "key": "Content-Type",
@@ -707,7 +707,7 @@
           },
           {
             "key": "Authorization",
-            "value": "Bearer {{user1Token}}"
+            "value": "Bearer {{reviewer1Token}}"
           }
         ],
         "body": {
@@ -731,7 +731,7 @@
       ],
       "request": {
         "method": "POST",
-        "url": "{{baseUrl}}/api/v1/bookings/{{user1PastBookingId}}/reviews",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer1PastBookingId}}/reviews",
         "header": [
           {
             "key": "Content-Type",
@@ -739,7 +739,7 @@
           },
           {
             "key": "Authorization",
-            "value": "Bearer {{user1Token}}"
+            "value": "Bearer {{reviewer1Token}}"
           }
         ],
         "body": {
@@ -763,7 +763,7 @@
       ],
       "request": {
         "method": "POST",
-        "url": "{{baseUrl}}/api/v1/bookings/{{user1PastBookingId}}/reviews",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer1PastBookingId}}/reviews",
         "header": [
           {
             "key": "Content-Type",
@@ -771,7 +771,7 @@
           },
           {
             "key": "Authorization",
-            "value": "Bearer {{user1Token}}"
+            "value": "Bearer {{reviewer1Token}}"
           }
         ],
         "body": {
@@ -795,7 +795,7 @@
       ],
       "request": {
         "method": "POST",
-        "url": "{{baseUrl}}/api/v1/bookings/{{user1PastBookingId}}/reviews",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer1PastBookingId}}/reviews",
         "header": [
           {
             "key": "Content-Type",
@@ -803,7 +803,7 @@
           },
           {
             "key": "Authorization",
-            "value": "Bearer {{user1Token}}"
+            "value": "Bearer {{reviewer1Token}}"
           }
         ],
         "body": {
@@ -827,7 +827,7 @@
       ],
       "request": {
         "method": "POST",
-        "url": "{{baseUrl}}/api/v1/bookings/{{user1PastBookingId}}/reviews",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer1PastBookingId}}/reviews",
         "header": [
           {
             "key": "Content-Type",
@@ -835,7 +835,7 @@
           },
           {
             "key": "Authorization",
-            "value": "Bearer {{user1Token}}"
+            "value": "Bearer {{reviewer1Token}}"
           }
         ],
         "body": {
@@ -859,7 +859,7 @@
       ],
       "request": {
         "method": "POST",
-        "url": "{{baseUrl}}/api/v1/bookings/{{user1PastBookingId}}/reviews",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer1PastBookingId}}/reviews",
         "header": [
           {
             "key": "Content-Type",
@@ -867,7 +867,7 @@
           },
           {
             "key": "Authorization",
-            "value": "Bearer {{user1Token}}"
+            "value": "Bearer {{reviewer1Token}}"
           }
         ],
         "body": {
@@ -908,16 +908,16 @@
               "const b = pm.response.json();",
               "pm.test('success true', () => pm.expect(b.success).to.eql(true));",
               "pm.test('rating 3 and comment saved', () => { pm.expect(b.data.rating).to.eql(3); pm.expect(b.data.comment).to.eql('Clean room, slow check-in'); });",
-              "pm.test('booking, hotel and user come from the booking, not the body', () => { pm.expect(b.data.booking).to.eql(pm.environment.get('user1PastBookingId')); pm.expect(b.data.hotel).to.eql(pm.environment.get('reviewHotelId')); pm.expect(b.data.user).to.eql(pm.environment.get('user1Id')); });",
+              "pm.test('booking, hotel and user come from the booking, not the body', () => { pm.expect(b.data.booking).to.eql(pm.environment.get('reviewer1PastBookingId')); pm.expect(b.data.hotel).to.eql(pm.environment.get('reviewHotelId')); pm.expect(b.data.user).to.eql(pm.environment.get('reviewer1Id')); });",
               "pm.test('has _id, createdAt, updatedAt', () => pm.expect(b.data).to.include.keys('_id', 'createdAt', 'updatedAt'));",
-              "pm.environment.set('user1ReviewId', b.data._id);"
+              "pm.environment.set('reviewer1ReviewId', b.data._id);"
             ]
           }
         }
       ],
       "request": {
         "method": "POST",
-        "url": "{{baseUrl}}/api/v1/bookings/{{user1PastBookingId}}/reviews",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer1PastBookingId}}/reviews",
         "header": [
           {
             "key": "Content-Type",
@@ -925,12 +925,12 @@
           },
           {
             "key": "Authorization",
-            "value": "Bearer {{user1Token}}"
+            "value": "Bearer {{reviewer1Token}}"
           }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\"rating\":3,\"comment\":\"Clean room, slow check-in\",\"user\":\"{{user2Id}}\",\"hotel\":\"{{hotel1Id}}\",\"booking\":\"{{user2PastBookingId}}\"}"
+          "raw": "{\"rating\":3,\"comment\":\"Clean room, slow check-in\",\"user\":\"{{reviewer2Id}}\",\"hotel\":\"{{hotel1Id}}\",\"booking\":\"{{reviewer2PastBookingId}}\"}"
         }
       }
     },
@@ -970,7 +970,7 @@
       ],
       "request": {
         "method": "POST",
-        "url": "{{baseUrl}}/api/v1/bookings/{{user1PastBookingId}}/reviews",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer1PastBookingId}}/reviews",
         "header": [
           {
             "key": "Content-Type",
@@ -978,7 +978,7 @@
           },
           {
             "key": "Authorization",
-            "value": "Bearer {{user1Token}}"
+            "value": "Bearer {{reviewer1Token}}"
           }
         ],
         "body": {
@@ -1017,14 +1017,14 @@
             "exec": [
               "pm.test('status 201', () => pm.response.to.have.status(201));",
               "const b = pm.response.json();",
-              "pm.test('rating 4 by user2', () => { pm.expect(b.data.rating).to.eql(4); pm.expect(b.data.user).to.eql(pm.environment.get('user2Id')); });"
+              "pm.test('rating 4 by reviewer2', () => { pm.expect(b.data.rating).to.eql(4); pm.expect(b.data.user).to.eql(pm.environment.get('reviewer2Id')); });"
             ]
           }
         }
       ],
       "request": {
         "method": "POST",
-        "url": "{{baseUrl}}/api/v1/bookings/{{user2PastBookingId}}/reviews",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer2PastBookingId}}/reviews",
         "header": [
           {
             "key": "Content-Type",
@@ -1032,7 +1032,7 @@
           },
           {
             "key": "Authorization",
-            "value": "Bearer {{user2Token}}"
+            "value": "Bearer {{reviewer2Token}}"
           }
         ],
         "body": {
@@ -1072,7 +1072,7 @@
               "pm.test('status 200', () => pm.response.to.have.status(200));",
               "const b = pm.response.json();",
               "pm.test('count 2, averageRating 3.5', () => { pm.expect(b.count).to.eql(2); pm.expect(b.averageRating).to.eql(3.5); });",
-              "pm.test('reviewers are user1 and user2', () => pm.expect(b.data.map((r) => r.user.name).sort()).to.eql(['Test User One', 'Test User Two']));"
+              "pm.test('reviewers are reviewer1 and reviewer2', () => pm.expect(b.data.map((r) => r.user.name).sort()).to.eql(['Review User One', 'Review User Two']));"
             ]
           }
         }
