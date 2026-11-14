@@ -9,6 +9,7 @@ const {
 
 //Include other resource routers
 const bookingRouter = require('./bookings');
+const reviewRouter = require('./reviews');
 
 const { protect, authorize } = require('../middleware/auth');
 
@@ -16,6 +17,7 @@ const router = express.Router();
 
 //Re-route into other resource routers
 router.use('/:hotelId/bookings', bookingRouter);
+router.use('/:hotelId/reviews', reviewRouter);
 
 router
   .route('/')

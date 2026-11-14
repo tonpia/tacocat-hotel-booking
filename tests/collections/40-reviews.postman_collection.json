@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "40 Reviews",
-    "description": "Hotel review feature (R1 to R5). B1: Review model rules and hotel averageRating/reviewCount.",
+    "description": "Hotel review feature (R1 to R5). B1: Review model rules and hotel averageRating/reviewCount. B4: public GET /hotels/:hotelId/reviews.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -203,6 +203,143 @@
           "mode": "raw",
           "raw": "{\"email\": \"{{adminEmail}}\", \"password\": \"{{adminPassword}}\"}"
         }
+      }
+    },
+    {
+      "name": "GET /hotels/:hotelId/reviews is public and lists the hotel's reviews (R4)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('success true', () => pm.expect(body.success).to.eql(true));",
+              "pm.test('count 2', () => pm.expect(body.count).to.eql(2));",
+              "pm.test('data has 2 reviews', () => pm.expect(body.data).to.have.lengthOf(2));",
+              "pm.test('averageRating 2.5', () => pm.expect(body.averageRating).to.eql(2.5));",
+              "pm.test('ratings are 4 and 1', () => pm.expect(body.data.map((r) => r.rating).sort()).to.eql([1, 4]));",
+              "pm.test('only this hotel\\'s reviews', () => body.data.forEach((r) => pm.expect(r.hotel).to.eql(pm.environment.get('hotel2Id'))));",
+              "pm.test('newest first', () => { for (let i = 1; i < body.data.length; i++) { pm.expect(new Date(body.data[i - 1].createdAt).getTime()).to.be.at.least(new Date(body.data[i].createdAt).getTime()); } });",
+              "pm.test('reviewer shows name only', () => body.data.forEach((r) => { pm.expect(r.user.name).to.eql('Test User One'); pm.expect(Object.keys(r.user).sort()).to.eql(['_id', 'name']); }));",
+              "pm.test('review has rating, comment, booking, createdAt', () => pm.expect(body.data[0]).to.include.keys('rating', 'comment', 'booking', 'createdAt'));",
+              "const stats = JSON.parse(pm.environment.get('hotel2StatsAfterRejects'));",
+              "pm.test('averageRating and count match the hotel', () => { pm.expect(body.averageRating).to.eql(stats.averageRating); pm.expect(body.count).to.eql(stats.reviewCount); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{hotel2Id}}/reviews",
+        "header": []
+      }
+    },
+    {
+      "name": "GET /hotels/:hotelId/reviews for another hotel shows only its own review (R4)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('count 1', () => pm.expect(body.count).to.eql(1));",
+              "pm.test('averageRating 5', () => pm.expect(body.averageRating).to.eql(5));",
+              "pm.test('reviewer is user2', () => pm.expect(body.data[0].user.name).to.eql('Test User Two'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{hotel3Id}}/reviews",
+        "header": []
+      }
+    },
+    {
+      "name": "GET /hotels/:hotelId/reviews with a token also works (R4)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('count 1', () => pm.expect(pm.response.json().count).to.eql(1));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{hotel3Id}}/reviews",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GET /hotels/:hotelId/reviews for a hotel without reviews: count 0, averageRating null (R4)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('count 0', () => pm.expect(body.count).to.eql(0));",
+              "pm.test('averageRating null', () => pm.expect(body.averageRating).to.eql(null));",
+              "pm.test('data empty', () => pm.expect(body.data).to.eql([]));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{hotel1Id}}/reviews",
+        "header": []
+      }
+    },
+    {
+      "name": "GET /hotels/:hotelId/reviews for a missing hotel gives 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));",
+              "pm.test('success false', () => pm.expect(pm.response.json().success).to.eql(false));",
+              "pm.test('has message', () => pm.expect(pm.response.json().message).to.be.a('string'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/000000000000000000000000/reviews",
+        "header": []
+      }
+    },
+    {
+      "name": "GET /hotels/:hotelId/reviews with an invalid hotel id gives 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));",
+              "pm.test('success false', () => pm.expect(pm.response.json().success).to.eql(false));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/not-a-valid-id/reviews",
+        "header": []
       }
     },
     {

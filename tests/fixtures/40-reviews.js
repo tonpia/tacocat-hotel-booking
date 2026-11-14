@@ -1,12 +1,18 @@
 //Review test data (owned by Person B). Runs after 10-base.js.
 //Returned values are available in Postman collections as {{name}}.
 //
-//B1 has no review endpoints yet, so this fixture exercises the Review model
-//directly: it records which invalid reviews the model rejects and the hotel's
-//averageRating/reviewCount after create, edit and delete, and the
-//40-reviews collection asserts on those values and on GET /hotels/:id.
+//There is no endpoint to create reviews yet (B2), so this fixture exercises
+//the Review model directly: it records which invalid reviews the model rejects
+//and the hotel's averageRating/reviewCount after create, edit and delete, and
+//the 40-reviews collection asserts on those values, on GET /hotels/:id and on
+//GET /hotels/:hotelId/reviews (B4).
 //Reviews point at placeholder booking ids until B2 adds real bookings with a
 //past check-out.
+//
+//Left in the database for the collection:
+//  hotel1: no reviews
+//  hotel2: ratings 4 and 1 (user1), average 2.5 of 2
+//  hotel3 (this fixture): rating 5 (user2), so hotel2's list must not show it
 
 require('../../models/Review');
 
@@ -78,6 +84,20 @@ exports.seed = async (mongoose, base) => {
   };
   const statsAfterRejects = await hotelStats(Hotel, base.hotel2Id);
 
+  //A review on another hotel, which must not appear in hotel2's reviews
+  const hotel3 = await Hotel.create({
+    name: 'Review Fixture Hotel',
+    address: '3 Fixture Road',
+    tel: '020000003',
+  });
+  await Review.create({
+    user: base.user2Id,
+    hotel: hotel3.id,
+    booking: new ObjectId(),
+    rating: 5,
+    comment: 'Fixture review on another hotel',
+  });
+
   return {
     reviewModelRejects: JSON.stringify(rejects),
     hotel2StatsAfterCreate: statsAfterCreate,
@@ -85,5 +105,6 @@ exports.seed = async (mongoose, base) => {
     hotel2StatsAfterQueryEdit: statsAfterQueryEdit,
     hotel2StatsAfterDelete: statsAfterDelete,
     hotel2StatsAfterRejects: statsAfterRejects,
+    hotel3Id: hotel3.id,
   };
 };
