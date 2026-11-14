@@ -11,7 +11,7 @@ const { sanitizeNoSql, xssClean } = require('./middleware/security');
 const hotelRoutes = require('./routes/hotels');
 const authRoutes = require('./routes/auth');
 const bookingRoutes = require('./routes/bookings');
-const { bookingReviewRouter } = require('./routes/reviews');
+const { bookingReviewRouter, reviewRouter } = require('./routes/reviews');
 
 dotenv.config({ path: './config/config.env' });
 
@@ -46,6 +46,7 @@ app.use('/api/v1/hotels', hotelRoutes);
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/bookings/:bookingId/reviews', bookingReviewRouter);
 app.use('/api/v1/bookings', bookingRoutes);
+app.use('/api/v1/reviews', reviewRouter);
 
 app.use((error, req, res, next) => {
   const statusCode = error.name === 'CastError' ? 404 : 500;
