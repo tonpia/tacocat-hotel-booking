@@ -373,7 +373,7 @@
       }
     },
     {
-      "name": "Me without token is 401",
+      "name": "Me with invalid token (cookie jar may hold a token) is 401",
       "event": [
         {
           "listen": "test",
@@ -392,6 +392,10 @@
           {
             "key": "Content-Type",
             "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer invalid"
           }
         ]
       }
@@ -425,7 +429,7 @@
       }
     },
     {
-      "name": "Logout without token is 401",
+      "name": "Logout with invalid token (cookie jar may hold a token) is 401",
       "event": [
         {
           "listen": "test",
@@ -443,6 +447,10 @@
           {
             "key": "Content-Type",
             "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer invalid"
           }
         ]
       }
