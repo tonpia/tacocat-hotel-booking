@@ -82,7 +82,7 @@ exports.getHotel = async (req, res, next) => {
     const hotel = await Hotel.findById(req.params.id);
 
     if (!hotel) {
-      return res.status(400).json({ success: false, message: 'Hotel not found' });
+      return res.status(404).json({ success: false, message: 'Hotel not found' });
     }
 
     return res.status(200).json({ success: true, data: hotel });
@@ -112,11 +112,14 @@ exports.updateHotel = async (req, res, next) => {
     });
 
     if (!hotel) {
-      return res.status(400).json({ success: false, message: 'Hotel not found' });
+      return res.status(404).json({ success: false, message: 'Hotel not found' });
     }
 
     return res.status(200).json({ success: true, data: hotel });
   } catch (error) {
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ success: false, message: error.message });
+    }
     return next(error);
   }
 };
@@ -126,7 +129,7 @@ exports.deleteHotel = async (req, res, next) => {
     const hotel = await Hotel.findById(req.params.id);
 
     if (!hotel) {
-      return res.status(400).json({ success: false, message: 'Hotel not found' });
+      return res.status(404).json({ success: false, message: 'Hotel not found' });
     }
 
     //Document deleteOne triggers the cascade delete middleware
