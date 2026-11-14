@@ -1,6 +1,6 @@
 {
   "name": "tacocat-hotel-booking",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "private": true,
   "description": "Hotel Booking REST API with hotel reviews (2110503 SW Dev Practice final project, group TacoCat)",
   "main": "server.js",

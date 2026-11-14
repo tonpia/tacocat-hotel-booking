@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "20 Hotels",
-    "description": "Hotel endpoints after the Hospital to Hotel rename (A1).",
+    "description": "Hotel endpoints: public list and get, admin create, update and delete, 404 for missing hotels, cascade delete of bookings (A1, A5).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -96,7 +96,8 @@
           "script": {
             "exec": [
               "pm.test('status 200', () => pm.response.to.have.status(200));",
-              "pm.test('has hotels', () => pm.expect(pm.response.json().count).to.be.above(1));"
+              "pm.test('has hotels', () => pm.expect(pm.response.json().count).to.be.above(1));",
+              "pm.test('no bookings in the public list', () => pm.response.json().data.forEach((h) => pm.expect(h).to.not.have.property('bookings')));"
             ]
           }
         }
@@ -115,7 +116,8 @@
           "script": {
             "exec": [
               "pm.test('status 200', () => pm.response.to.have.status(200));",
-              "pm.test('name', () => pm.expect(pm.response.json().data.name).to.eql('Taco Hotel Bangkok'));"
+              "pm.test('name', () => pm.expect(pm.response.json().data.name).to.eql('Taco Hotel Bangkok'));",
+              "pm.test('no bookings in the public hotel', () => pm.expect(pm.response.json().data).to.not.have.property('bookings'));"
             ]
           }
         }
@@ -267,6 +269,339 @@
         "method": "GET",
         "url": "{{baseUrl}}/api/v1/hospitals",
         "header": []
+      }
+    },
+    {
+      "name": "Get missing hotel is 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));",
+              "pm.test('success false with message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/000000000000000000000000",
+        "header": []
+      }
+    },
+    {
+      "name": "Get hotel with invalid id is 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));",
+              "pm.test('success false with message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/not-an-id",
+        "header": []
+      }
+    },
+    {
+      "name": "Update hotel as user is 403",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/hotels/{{newHotelId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{user1Token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"tel\":\"029999999\"}"
+        }
+      }
+    },
+    {
+      "name": "Update hotel as admin is 200",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('tel updated', () => pm.expect(pm.response.json().data.tel).to.eql('029999999'));",
+              "pm.test('name kept', () => pm.expect(pm.response.json().data.name).to.eql('New Hotel'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/hotels/{{newHotelId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"tel\":\"029999999\"}"
+        }
+      }
+    },
+    {
+      "name": "Update hotel with empty name is 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('success false with message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/hotels/{{newHotelId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\":\"\"}"
+        }
+      }
+    },
+    {
+      "name": "Update missing hotel is 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));",
+              "pm.test('success false with message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/hotels/000000000000000000000000",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"tel\":\"029999999\"}"
+        }
+      }
+    },
+    {
+      "name": "User1 books the new hotel",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 201', () => pm.response.to.have.status(201));",
+              "pm.environment.set('newHotelBookingId', pm.response.json().data._id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/hotels/{{newHotelId}}/bookings",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{user1Token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"checkInDate\":\"2027-12-01\",\"checkOutDate\":\"2027-12-03\"}"
+        }
+      }
+    },
+    {
+      "name": "Delete hotel as user is 403",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/hotels/{{newHotelId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{user1Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Delete missing hotel is 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));",
+              "pm.test('success false with message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/hotels/000000000000000000000000",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Delete hotel as admin is 200",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('success', () => pm.expect(pm.response.json().success).to.eql(true));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/hotels/{{newHotelId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Deleted hotel is 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{newHotelId}}",
+        "header": []
+      }
+    },
+    {
+      "name": "Deleted hotel's booking is gone (cascade)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/bookings/{{newHotelBookingId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Other hotels keep their bookings",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/bookings/{{user1PastBookingId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ]
       }
     }
   ]

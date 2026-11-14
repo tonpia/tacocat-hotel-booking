@@ -2,6 +2,19 @@
 
 All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Add new versions at the top.
 
+## [0.8.1] - 2026-11-15
+
+### Fixed
+- A5 (FR3): `GET`, `PUT` and `DELETE /hotels/:id` return 404 for a missing hotel (was 400). An invalid id also gives 404.
+- `PUT /hotels/:id` with invalid data (e.g. an empty name) returns 400 with `{ success: false, message }` instead of 500.
+- `GET /hotels` no longer includes each hotel's bookings. The list is public, so it exposed other users' bookings (NFR2).
+
+### Changed
+- Deleting a hotel also deletes its reviews, along with its bookings, as `docs/api.md` says.
+
+### Added
+- Postman tests in `20-hotels` for admin update and delete, 403 for a user, 404 for a missing or invalid id, 400 on an invalid update, and the cascade (the deleted hotel's booking is gone, other bookings stay).
+
 ## [0.8.0] - 2026-11-15
 
 ### Added

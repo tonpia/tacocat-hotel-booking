@@ -65,12 +65,14 @@ hotelSchema.virtual('reviews', {
   justOne: false,
 });
 
-//Cascade delete bookings when a hotel is deleted
+//Cascade delete the hotel's reviews and bookings when a hotel is deleted.
+//deleteMany skips the per-document hooks, so reviews are removed here directly
+//instead of through a booking's own cascade.
 hotelSchema.pre(
   'deleteOne',
   { document: true, query: false },
   async function () {
-    console.log(`Bookings being removed from hotel ${this._id}`);
+    await this.model('Review').deleteMany({ hotel: this._id });
     await this.model('Booking').deleteMany({ hotel: this._id });
   },
 );
