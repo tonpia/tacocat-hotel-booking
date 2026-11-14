@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "40 Reviews",
-    "description": "Hotel review feature (R1 to R5). B1: Review model rules and hotel averageRating/reviewCount. B4: public GET /hotels/:hotelId/reviews. B2: POST /bookings/:bookingId/reviews.",
+    "description": "Hotel review feature (R1 to R5). B1: Review model rules and hotel averageRating/reviewCount. B4: public GET /hotels/:hotelId/reviews. B2: POST /bookings/:bookingId/reviews. B3: GET /reviews (own, admin all), GET /reviews/:id, PUT and DELETE /reviews/:id (owner).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -31,6 +31,72 @@
           "mode": "raw",
           "raw": "{\"rating\":3,\"comment\":\"Clean room, slow check-in\"}"
         }
+      }
+    },
+    {
+      "name": "GET /reviews: not logged in gives 401 (R3)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 401', () => pm.response.to.have.status(401));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/reviews",
+        "header": []
+      }
+    },
+    {
+      "name": "PUT /reviews/:id: not logged in gives 401 (R3)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 401', () => pm.response.to.have.status(401));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/reviews/000000000000000000000000",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":5}"
+        }
+      }
+    },
+    {
+      "name": "DELETE /reviews/:id: not logged in gives 401 (R3)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 401', () => pm.response.to.have.status(401));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/reviews/000000000000000000000000",
+        "header": []
       }
     },
     {
@@ -1017,7 +1083,8 @@
             "exec": [
               "pm.test('status 201', () => pm.response.to.have.status(201));",
               "const b = pm.response.json();",
-              "pm.test('rating 4 by reviewer2', () => { pm.expect(b.data.rating).to.eql(4); pm.expect(b.data.user).to.eql(pm.environment.get('reviewer2Id')); });"
+              "pm.test('rating 4 by reviewer2', () => { pm.expect(b.data.rating).to.eql(4); pm.expect(b.data.user).to.eql(pm.environment.get('reviewer2Id')); });",
+              "pm.environment.set('reviewer2ReviewId', pm.response.json().data._id);"
             ]
           }
         }
@@ -1080,6 +1147,981 @@
       "request": {
         "method": "GET",
         "url": "{{baseUrl}}/api/v1/hotels/{{reviewHotelId}}/reviews",
+        "header": []
+      }
+    },
+    {
+      "name": "Login user1",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.environment.set('user1Token', pm.response.json().token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/auth/login",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\": \"{{user1Email}}\", \"password\": \"{{user1Password}}\"}"
+        }
+      }
+    },
+    {
+      "name": "GET /reviews: reviewer1 sees only their own review (R3)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const b = pm.response.json();",
+              "pm.test('success true, count 1', () => { pm.expect(b.success).to.eql(true); pm.expect(b.count).to.eql(1); pm.expect(b.data).to.have.lengthOf(1); });",
+              "pm.test('only own reviews', () => b.data.forEach((r) => pm.expect(r.user).to.eql(pm.environment.get('reviewer1Id'))));",
+              "pm.test('it is the review just written', () => pm.expect(b.data[0]._id).to.eql(pm.environment.get('reviewer1ReviewId')));",
+              "pm.test('hotel populated with name', () => { pm.expect(b.data[0].hotel._id).to.eql(pm.environment.get('reviewHotelId')); pm.expect(b.data[0].hotel.name).to.eql('Review Booking Hotel'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/reviews",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GET /reviews: reviewer2 sees only their own review (R3)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const b = pm.response.json();",
+              "pm.test('count 1', () => pm.expect(b.count).to.eql(1));",
+              "pm.test('only own reviews', () => b.data.forEach((r) => pm.expect(r.user).to.eql(pm.environment.get('reviewer2Id'))));",
+              "pm.test('it is reviewer2 review', () => pm.expect(b.data[0]._id).to.eql(pm.environment.get('reviewer2ReviewId')));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/reviews",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer2Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GET /reviews: base user1 sees only their fixture reviews (R3)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const b = pm.response.json();",
+              "pm.test('count 2 (hotel2 fixture reviews)', () => pm.expect(b.count).to.eql(2));",
+              "pm.test('only own reviews', () => b.data.forEach((r) => pm.expect(r.user).to.eql(pm.environment.get('user1Id'))));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/reviews",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{user1Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GET /reviews: admin sees all reviews",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const b = pm.response.json();",
+              "pm.test('count 5: 2 on hotel2, 1 on hotel3, 2 on reviewHotel', () => { pm.expect(b.count).to.eql(5); pm.expect(b.data).to.have.lengthOf(5); });",
+              "pm.test('reviews by several users', () => pm.expect(new Set(b.data.map((r) => r.user)).size).to.eql(4));",
+              "pm.test('newest first', () => { const t = b.data.map((r) => new Date(r.createdAt).getTime()); pm.expect(t).to.eql([...t].sort((x, y) => y - x)); });",
+              "pm.test('hotel names populated', () => b.data.forEach((r) => pm.expect(r.hotel.name).to.be.a('string')));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/reviews",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GET /reviews/:id is public (R4)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const b = pm.response.json().data;",
+              "pm.test('the review', () => { pm.expect(b._id).to.eql(pm.environment.get('reviewer1ReviewId')); pm.expect(b.rating).to.eql(3); pm.expect(b.comment).to.eql('Clean room, slow check-in'); });",
+              "pm.test('reviewer shows name only', () => { pm.expect(b.user.name).to.eql('Review User One'); pm.expect(Object.keys(b.user).sort()).to.eql(['_id', 'name']); });",
+              "pm.test('hotel name', () => pm.expect(b.hotel.name).to.eql('Review Booking Hotel'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/reviews/{{reviewer1ReviewId}}",
+        "header": []
+      }
+    },
+    {
+      "name": "GET /reviews/:id: missing review gives 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/reviews/000000000000000000000000",
+        "header": []
+      }
+    },
+    {
+      "name": "GET /reviews/:id: invalid id gives 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/reviews/not-a-valid-id",
+        "header": []
+      }
+    },
+    {
+      "name": "PUT review: someone else's review gives 403 (R3)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 403', () => pm.response.to.have.status(403));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/reviews/{{reviewer1ReviewId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer2Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":1,\"comment\":\"Not mine\"}"
+        }
+      }
+    },
+    {
+      "name": "PUT review: admin on a user's review gives 403 (R3, owner only)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 403', () => pm.response.to.have.status(403));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/reviews/{{reviewer1ReviewId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":1,\"comment\":\"Admin edit\"}"
+        }
+      }
+    },
+    {
+      "name": "PUT review: missing review gives 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/reviews/000000000000000000000000",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":5}"
+        }
+      }
+    },
+    {
+      "name": "PUT review: invalid id gives 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/reviews/not-a-valid-id",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":5}"
+        }
+      }
+    },
+    {
+      "name": "PUT review: rating 0 gives 400 (R3)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/reviews/{{reviewer1ReviewId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":0,\"comment\":\"x\"}"
+        }
+      }
+    },
+    {
+      "name": "PUT review: rating 6 gives 400 (R3)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/reviews/{{reviewer1ReviewId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":6,\"comment\":\"x\"}"
+        }
+      }
+    },
+    {
+      "name": "PUT review: rating 3.5 gives 400 (R3)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/reviews/{{reviewer1ReviewId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":3.5,\"comment\":\"x\"}"
+        }
+      }
+    },
+    {
+      "name": "PUT review: rating as a string gives 400 (R3)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/reviews/{{reviewer1ReviewId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":\"4\",\"comment\":\"x\"}"
+        }
+      }
+    },
+    {
+      "name": "PUT review: rating null gives 400 (R3)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/reviews/{{reviewer1ReviewId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":null,\"comment\":\"x\"}"
+        }
+      }
+    },
+    {
+      "name": "PUT review: comment over 1000 characters gives 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/reviews/{{reviewer1ReviewId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":4,\"comment\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}"
+        }
+      }
+    },
+    {
+      "name": "Failed edits do not change the average (3.5 of 2)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const h = pm.response.json().data;",
+              "pm.test('averageRating 3.5', () => pm.expect(h.averageRating).to.eql(3.5));",
+              "pm.test('reviewCount 2', () => pm.expect(h.reviewCount).to.eql(2));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{reviewHotelId}}",
+        "header": []
+      }
+    },
+    {
+      "name": "GET /reviews/:id after failed edits is unchanged",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const b = pm.response.json().data;",
+              "pm.test('rating 3 and comment unchanged', () => { pm.expect(b.rating).to.eql(3); pm.expect(b.comment).to.eql('Clean room, slow check-in'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/reviews/{{reviewer1ReviewId}}",
+        "header": []
+      }
+    },
+    {
+      "name": "PUT review: owner edits rating and comment, 200 (R3)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const b = pm.response.json();",
+              "pm.test('success true', () => pm.expect(b.success).to.eql(true));",
+              "pm.test('rating 5 and new comment', () => { pm.expect(b.data.rating).to.eql(5); pm.expect(b.data.comment).to.eql('Better on the second look'); });",
+              "pm.test('user, hotel and booking unchanged, not taken from the body', () => { pm.expect(b.data.user).to.eql(pm.environment.get('reviewer1Id')); pm.expect(b.data.hotel).to.eql(pm.environment.get('reviewHotelId')); pm.expect(b.data.booking).to.eql(pm.environment.get('reviewer1PastBookingId')); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/reviews/{{reviewer1ReviewId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":5,\"comment\":\"Better on the second look\",\"user\":\"{{reviewer2Id}}\",\"hotel\":\"{{hotel1Id}}\",\"booking\":\"{{reviewer2PastBookingId}}\"}"
+        }
+      }
+    },
+    {
+      "name": "Average after editing 3 to 5 is 4.5 of 2 (R4)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const h = pm.response.json().data;",
+              "pm.test('averageRating 4.5', () => pm.expect(h.averageRating).to.eql(4.5));",
+              "pm.test('reviewCount 2', () => pm.expect(h.reviewCount).to.eql(2));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{reviewHotelId}}",
+        "header": []
+      }
+    },
+    {
+      "name": "PUT review: owner edits only the comment, rating stays (R3)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const b = pm.response.json().data;",
+              "pm.test('rating still 5', () => pm.expect(b.rating).to.eql(5));",
+              "pm.test('new comment', () => pm.expect(b.comment).to.eql('Comment only'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/reviews/{{reviewer1ReviewId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"comment\":\"Comment only\"}"
+        }
+      }
+    },
+    {
+      "name": "PUT review: owner edits only the rating (R3)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const b = pm.response.json().data;",
+              "pm.test('rating 2', () => pm.expect(b.rating).to.eql(2));",
+              "pm.test('comment kept', () => pm.expect(b.comment).to.eql('Comment only'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/reviews/{{reviewer1ReviewId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":2}"
+        }
+      }
+    },
+    {
+      "name": "Average after editing 5 to 2 is 3 of 2 (R4)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const h = pm.response.json().data;",
+              "pm.test('averageRating 3', () => pm.expect(h.averageRating).to.eql(3));",
+              "pm.test('reviewCount 2', () => pm.expect(h.reviewCount).to.eql(2));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{reviewHotelId}}",
+        "header": []
+      }
+    },
+    {
+      "name": "DELETE review: someone else's review gives 403 (R3)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 403', () => pm.response.to.have.status(403));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/reviews/{{reviewer1ReviewId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer2Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DELETE review: missing review gives 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/reviews/000000000000000000000000",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer2Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DELETE review: invalid id gives 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/reviews/not-a-valid-id",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer2Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Failed deletes do not change the average (3 of 2)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const h = pm.response.json().data;",
+              "pm.test('averageRating 3', () => pm.expect(h.averageRating).to.eql(3));",
+              "pm.test('reviewCount 2', () => pm.expect(h.reviewCount).to.eql(2));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{reviewHotelId}}",
+        "header": []
+      }
+    },
+    {
+      "name": "DELETE review: owner deletes their review, 200 (R3)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const b = pm.response.json();",
+              "pm.test('success true, empty data', () => { pm.expect(b.success).to.eql(true); pm.expect(b.data).to.eql({}); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/reviews/{{reviewer2ReviewId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer2Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GET /reviews/:id after delete gives 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/reviews/{{reviewer2ReviewId}}",
+        "header": []
+      }
+    },
+    {
+      "name": "DELETE review: deleting it again gives 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/reviews/{{reviewer2ReviewId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer2Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Average after deleting the 4 is 2 of 1 (R4)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const h = pm.response.json().data;",
+              "pm.test('averageRating 2', () => pm.expect(h.averageRating).to.eql(2));",
+              "pm.test('reviewCount 1', () => pm.expect(h.reviewCount).to.eql(1));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{reviewHotelId}}",
+        "header": []
+      }
+    },
+    {
+      "name": "GET /reviews: reviewer2 has no reviews left (R3)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const b = pm.response.json();",
+              "pm.test('count 0', () => { pm.expect(b.count).to.eql(0); pm.expect(b.data).to.eql([]); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/reviews",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer2Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GET /hotels/:hotelId/reviews after edit and delete (R4)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const b = pm.response.json();",
+              "pm.test('count 1, averageRating 2', () => { pm.expect(b.count).to.eql(1); pm.expect(b.averageRating).to.eql(2); });",
+              "pm.test('only reviewer1 review left', () => pm.expect(b.data[0]._id).to.eql(pm.environment.get('reviewer1ReviewId')));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{reviewHotelId}}/reviews",
+        "header": []
+      }
+    },
+    {
+      "name": "DELETE review: owner deletes the last review, 200 (R3)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/reviews/{{reviewer1ReviewId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Hotel with no reviews left has averageRating null and reviewCount 0 (R4)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const h = pm.response.json().data;",
+              "pm.test('averageRating null', () => pm.expect(h.averageRating).to.eql(null));",
+              "pm.test('reviewCount 0', () => pm.expect(h.reviewCount).to.eql(0));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{reviewHotelId}}",
         "header": []
       }
     }
