@@ -59,4 +59,15 @@ BookingSchema.virtual('nights').get(function () {
   return Math.round((this.checkOutDate - this.checkInDate) / DAY_MS);
 });
 
+//Cascade: deleting a booking deletes its review. The review's own deleteOne
+//hook then recalculates the hotel's averageRating and reviewCount.
+BookingSchema.pre(
+  'deleteOne',
+  { document: true, query: false },
+  async function () {
+    const review = await this.model('Review').findOne({ booking: this._id });
+    if (review) await review.deleteOne();
+  },
+);
+
 module.exports = mongoose.model('Booking', BookingSchema);
