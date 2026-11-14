@@ -15,6 +15,7 @@ const APPT_HOTEL_ID = '6ab8cf3ded32aea2b87adb42';
 
 const ADMIN = {
   name: 'admin',
+  tel: '0800000000',
   email: 'admin@gmail.com',
   password: '12345678',
   role: 'admin',

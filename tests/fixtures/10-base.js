@@ -7,17 +7,20 @@ exports.seed = async (mongoose) => {
 
   const admin = await User.create({
     name: 'Test Admin',
+    tel: '0800000000',
     email: 'admin@test.com',
     password: 'admin1234',
     role: 'admin',
   });
   const user1 = await User.create({
     name: 'Test User One',
+    tel: '0811111111',
     email: 'user1@test.com',
     password: 'user11234',
   });
   const user2 = await User.create({
     name: 'Test User Two',
+    tel: '0822222222',
     email: 'user2@test.com',
     password: 'user21234',
   });

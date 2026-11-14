@@ -2,6 +2,17 @@
 
 All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Add new versions at the top.
 
+## [0.4.0] - 2026-11-14
+
+### Added
+- User `tel` (required) on the model and `POST /auth/register`.
+- Postman collection `10-auth` covering register, login, me and logout, success and failure cases.
+
+### Changed
+- Register errors (missing field, invalid email, duplicate email, short password) return 400 with `{ success: false, message }`.
+- Login with an unknown email now returns 401 (was 400); error bodies use `message` instead of `msg`.
+- `GET /auth/logout` now requires login, as in `docs/api.md`.
+
 ## [0.3.0] - 2026-11-14
 
 ### Added
