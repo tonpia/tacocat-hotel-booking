@@ -1,10 +1,38 @@
 {
   "info": {
     "name": "40 Reviews",
-    "description": "Hotel review feature (R1 to R5). B1: Review model rules and hotel averageRating/reviewCount. B4: public GET /hotels/:hotelId/reviews.",
+    "description": "Hotel review feature (R1 to R5). B1: Review model rules and hotel averageRating/reviewCount. B4: public GET /hotels/:hotelId/reviews. B2: POST /bookings/:bookingId/reviews.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
+    {
+      "name": "POST review: not logged in gives 401 (R1; first, before any login sets a cookie)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 401', () => pm.response.to.have.status(401));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer1PastBookingId}}/reviews",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":3,\"comment\":\"Clean room, slow check-in\"}"
+        }
+      }
+    },
     {
       "name": "Review model rejects invalid reviews (R1, R2)",
       "event": [
@@ -374,6 +402,685 @@
           "mode": "raw",
           "raw": "{\"name\": \"Review Test Hotel\", \"address\": \"7 Test Road\", \"tel\": \"020000007\"}"
         }
+      }
+    },
+    {
+      "name": "Login reviewer1",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.environment.set('reviewer1Token', pm.response.json().token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/auth/login",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\": \"{{reviewer1Email}}\", \"password\": \"{{reviewer1Password}}\"}"
+        }
+      }
+    },
+    {
+      "name": "Login reviewer2",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.environment.set('reviewer2Token', pm.response.json().token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/auth/login",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\": \"{{reviewer2Email}}\", \"password\": \"{{reviewer2Password}}\"}"
+        }
+      }
+    },
+    {
+      "name": "POST review: missing booking gives 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/bookings/000000000000000000000000/reviews",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":3,\"comment\":\"Clean room, slow check-in\"}"
+        }
+      }
+    },
+    {
+      "name": "POST review: invalid booking id gives 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/bookings/not-a-valid-id/reviews",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":3,\"comment\":\"Clean room, slow check-in\"}"
+        }
+      }
+    },
+    {
+      "name": "POST review: someone else's booking gives 403 (R1)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 403', () => pm.response.to.have.status(403));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer2PastBookingId}}/reviews",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":3,\"comment\":\"Clean room, slow check-in\"}"
+        }
+      }
+    },
+    {
+      "name": "POST review: admin on a user's booking gives 403 (R1, owner only)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 403', () => pm.response.to.have.status(403));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer2PastBookingId}}/reviews",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":3,\"comment\":\"Clean room, slow check-in\"}"
+        }
+      }
+    },
+    {
+      "name": "POST review: before check-out gives 400 (R1)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer1FutureBookingId}}/reviews",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":3,\"comment\":\"Clean room, slow check-in\"}"
+        }
+      }
+    },
+    {
+      "name": "POST review: check-out later today gives 400 (R1)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer1CheckOutLaterTodayBookingId}}/reviews",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":3,\"comment\":\"Clean room, slow check-in\"}"
+        }
+      }
+    },
+    {
+      "name": "POST review: rating 0 gives 400 (R1)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer1PastBookingId}}/reviews",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":0,\"comment\":\"x\"}"
+        }
+      }
+    },
+    {
+      "name": "POST review: rating 6 gives 400 (R1)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer1PastBookingId}}/reviews",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":6,\"comment\":\"x\"}"
+        }
+      }
+    },
+    {
+      "name": "POST review: rating 3.5 gives 400 (R1)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer1PastBookingId}}/reviews",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":3.5,\"comment\":\"x\"}"
+        }
+      }
+    },
+    {
+      "name": "POST review: rating -1 gives 400 (R1)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer1PastBookingId}}/reviews",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":-1,\"comment\":\"x\"}"
+        }
+      }
+    },
+    {
+      "name": "POST review: rating as a string gives 400 (R1)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer1PastBookingId}}/reviews",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":\"4\",\"comment\":\"x\"}"
+        }
+      }
+    },
+    {
+      "name": "POST review: missing rating gives 400 (R1)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer1PastBookingId}}/reviews",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"comment\":\"x\"}"
+        }
+      }
+    },
+    {
+      "name": "POST review: comment over 1000 characters gives 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer1PastBookingId}}/reviews",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":4,\"comment\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}"
+        }
+      }
+    },
+    {
+      "name": "Failed review attempts leave the hotel without reviews",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const h = pm.response.json().data;",
+              "pm.test('averageRating null', () => pm.expect(h.averageRating).to.eql(null));",
+              "pm.test('reviewCount 0', () => pm.expect(h.reviewCount).to.eql(0));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{reviewHotelId}}",
+        "header": []
+      }
+    },
+    {
+      "name": "POST review: owner after check-out gives 201 (R1)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 201', () => pm.response.to.have.status(201));",
+              "const b = pm.response.json();",
+              "pm.test('success true', () => pm.expect(b.success).to.eql(true));",
+              "pm.test('rating 3 and comment saved', () => { pm.expect(b.data.rating).to.eql(3); pm.expect(b.data.comment).to.eql('Clean room, slow check-in'); });",
+              "pm.test('booking, hotel and user come from the booking, not the body', () => { pm.expect(b.data.booking).to.eql(pm.environment.get('reviewer1PastBookingId')); pm.expect(b.data.hotel).to.eql(pm.environment.get('reviewHotelId')); pm.expect(b.data.user).to.eql(pm.environment.get('reviewer1Id')); });",
+              "pm.test('has _id, createdAt, updatedAt', () => pm.expect(b.data).to.include.keys('_id', 'createdAt', 'updatedAt'));",
+              "pm.environment.set('reviewer1ReviewId', b.data._id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer1PastBookingId}}/reviews",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":3,\"comment\":\"Clean room, slow check-in\",\"user\":\"{{reviewer2Id}}\",\"hotel\":\"{{hotel1Id}}\",\"booking\":\"{{reviewer2PastBookingId}}\"}"
+        }
+      }
+    },
+    {
+      "name": "Average after the first review is 3 of 1 (R4)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const h = pm.response.json().data;",
+              "pm.test('averageRating 3', () => pm.expect(h.averageRating).to.eql(3));",
+              "pm.test('reviewCount 1', () => pm.expect(h.reviewCount).to.eql(1));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{reviewHotelId}}",
+        "header": []
+      }
+    },
+    {
+      "name": "POST review: second review for the same booking gives 400 (R2)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('success false with a message', () => { const b = pm.response.json(); pm.expect(b.success).to.eql(false); pm.expect(b.message).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer1PastBookingId}}/reviews",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer1Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":5,\"comment\":\"Again\"}"
+        }
+      }
+    },
+    {
+      "name": "Second review attempt does not change the average (R2)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const h = pm.response.json().data;",
+              "pm.test('averageRating 3', () => pm.expect(h.averageRating).to.eql(3));",
+              "pm.test('reviewCount 1', () => pm.expect(h.reviewCount).to.eql(1));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{reviewHotelId}}",
+        "header": []
+      }
+    },
+    {
+      "name": "POST review: another user reviews their own booking, 201 without a comment (R1)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 201', () => pm.response.to.have.status(201));",
+              "const b = pm.response.json();",
+              "pm.test('rating 4 by reviewer2', () => { pm.expect(b.data.rating).to.eql(4); pm.expect(b.data.user).to.eql(pm.environment.get('reviewer2Id')); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/bookings/{{reviewer2PastBookingId}}/reviews",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{reviewer2Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"rating\":4}"
+        }
+      }
+    },
+    {
+      "name": "Average after the second review is 3.5 of 2 (R4)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const h = pm.response.json().data;",
+              "pm.test('averageRating 3.5', () => pm.expect(h.averageRating).to.eql(3.5));",
+              "pm.test('reviewCount 2', () => pm.expect(h.reviewCount).to.eql(2));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{reviewHotelId}}",
+        "header": []
+      }
+    },
+    {
+      "name": "GET /hotels/:hotelId/reviews lists the new reviews (R4)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const b = pm.response.json();",
+              "pm.test('count 2, averageRating 3.5', () => { pm.expect(b.count).to.eql(2); pm.expect(b.averageRating).to.eql(3.5); });",
+              "pm.test('reviewers are reviewer1 and reviewer2', () => pm.expect(b.data.map((r) => r.user.name).sort()).to.eql(['Review User One', 'Review User Two']));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{reviewHotelId}}/reviews",
+        "header": []
       }
     }
   ]

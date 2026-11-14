@@ -6,15 +6,28 @@
 //and the hotel's averageRating/reviewCount after create, edit and delete, and
 //the 40-reviews collection asserts on those values, on GET /hotels/:id and on
 //GET /hotels/:hotelId/reviews (B4).
-//Reviews point at placeholder booking ids until B2 adds real bookings with a
-//past check-out.
+//These model-level reviews point at placeholder booking ids.
+//
+//B2 (POST /bookings/:bookingId/reviews) uses two users of its own, reviewer1 and
+//reviewer2, with real bookings on a separate hotel, reviewHotel, which starts with
+//no reviews. Own users and names keep the base users' bookings (and the counts in
+//30-bookings) and the base fixture's {{...}} values unchanged:
+//  reviewer1PastBookingId     reviewer1, checked out 2 days ago: reviewable
+//  reviewer1FutureBookingId   reviewer1, check-out in 4 days: too early
+//  reviewer1CheckOutLaterTodayBookingId  reviewer1, check-out in 1 hour: too early
+//  reviewer2PastBookingId     reviewer2, checked out 2 days ago: reviewable by reviewer2 only
 //
 //Left in the database for the collection:
 //  hotel1: no reviews
 //  hotel2: ratings 4 and 1 (user1), average 2.5 of 2
 //  hotel3 (this fixture): rating 5 (user2), so hotel2's list must not show it
+//  reviewHotel (this fixture): no reviews, no ratings until the collection adds them
 
 require('../../models/Review');
+require('../../models/Booking');
+
+const HOUR = 60 * 60 * 1000;
+const DAY = 24 * HOUR;
 
 async function outcome(promise) {
   try {
@@ -98,6 +111,43 @@ exports.seed = async (mongoose, base) => {
     comment: 'Fixture review on another hotel',
   });
 
+  //Real users and bookings for POST /bookings/:bookingId/reviews (B2)
+  const User = mongoose.model('User');
+  const Booking = mongoose.model('Booking');
+  const [reviewer1, reviewer2] = await User.create([
+    {
+      name: 'Review User One',
+      tel: '0833333333',
+      email: 'reviewer1@test.com',
+      password: 'reviewer11234',
+    },
+    {
+      name: 'Review User Two',
+      tel: '0844444444',
+      email: 'reviewer2@test.com',
+      password: 'reviewer21234',
+    },
+  ]);
+  const reviewHotel = await Hotel.create({
+    name: 'Review Booking Hotel',
+    address: '4 Fixture Road',
+    tel: '020000004',
+  });
+  const now = Date.now();
+  const stay = (userId, checkOutFromNow) => ({
+    user: userId,
+    hotel: reviewHotel.id,
+    checkInDate: new Date(now + checkOutFromNow - 2 * DAY),
+    checkOutDate: new Date(now + checkOutFromNow),
+  });
+  const [reviewer1Past, reviewer1Future, reviewer1LaterToday, reviewer2Past] =
+    await Booking.create([
+      stay(reviewer1.id, -2 * DAY),
+      stay(reviewer1.id, 4 * DAY),
+      stay(reviewer1.id, HOUR),
+      stay(reviewer2.id, -2 * DAY),
+    ]);
+
   return {
     reviewModelRejects: JSON.stringify(rejects),
     hotel2StatsAfterCreate: statsAfterCreate,
@@ -106,5 +156,16 @@ exports.seed = async (mongoose, base) => {
     hotel2StatsAfterDelete: statsAfterDelete,
     hotel2StatsAfterRejects: statsAfterRejects,
     hotel3Id: hotel3.id,
+    reviewHotelId: reviewHotel.id,
+    reviewer1Email: reviewer1.email,
+    reviewer1Password: 'reviewer11234',
+    reviewer1Id: reviewer1.id,
+    reviewer2Email: reviewer2.email,
+    reviewer2Password: 'reviewer21234',
+    reviewer2Id: reviewer2.id,
+    reviewer1PastBookingId: reviewer1Past.id,
+    reviewer1FutureBookingId: reviewer1Future.id,
+    reviewer1CheckOutLaterTodayBookingId: reviewer1LaterToday.id,
+    reviewer2PastBookingId: reviewer2Past.id,
   };
 };
