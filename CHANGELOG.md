@@ -7,6 +7,7 @@ All notable changes to this project. Format: [Keep a Changelog](https://keepacha
 ### Fixed
 - A5 (FR3): `GET`, `PUT` and `DELETE /hotels/:id` return 404 for a missing hotel (was 400). An invalid id also gives 404.
 - `PUT /hotels/:id` with invalid data (e.g. an empty name) returns 400 with `{ success: false, message }` instead of 500.
+- `GET /hotels` no longer includes each hotel's bookings. The list is public, so it exposed other users' bookings (NFR2).
 
 ### Changed
 - Deleting a hotel also deletes its reviews, along with its bookings, as `docs/api.md` says.

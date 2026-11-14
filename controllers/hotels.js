@@ -21,7 +21,8 @@ exports.getHotels = async (req, res, next) => {
     );
 
     //Finding resource
-    query = Hotel.find(JSON.parse(queryStr)).populate('bookings');
+    //No populate('bookings'): the list is public and bookings are private (NFR2)
+    query = Hotel.find(JSON.parse(queryStr));
 
     //Select fields
     if (req.query.select) {
