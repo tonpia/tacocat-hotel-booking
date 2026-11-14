@@ -4,6 +4,7 @@
 exports.seed = async (mongoose) => {
   const User = mongoose.model('User');
   const Hotel = mongoose.model('Hotel');
+  const Booking = mongoose.model('Booking');
 
   const admin = await User.create({
     name: 'Test Admin',
@@ -46,6 +47,15 @@ exports.seed = async (mongoose) => {
     },
   ]);
 
+  //Dates relative to now: one booking not yet checked out, two already checked out
+  const day = 24 * 60 * 60 * 1000;
+  const inDays = (n) => new Date(Date.now() + n * day);
+  const [user1Future, user1Past, user2Booking] = await Booking.create([
+    { user: user1.id, hotel: hotel1.id, checkInDate: inDays(10), checkOutDate: inDays(12) },
+    { user: user1.id, hotel: hotel1.id, checkInDate: inDays(-12), checkOutDate: inDays(-10) },
+    { user: user2.id, hotel: hotel2.id, checkInDate: inDays(-6), checkOutDate: inDays(-4) },
+  ]);
+
   return {
     adminEmail: admin.email,
     adminPassword: 'admin1234',
@@ -58,5 +68,8 @@ exports.seed = async (mongoose) => {
     user2Id: user2.id,
     hotel1Id: hotel1.id,
     hotel2Id: hotel2.id,
+    user1FutureBookingId: user1Future.id,
+    user1PastBookingId: user1Past.id,
+    user2BookingId: user2Booking.id,
   };
 };
