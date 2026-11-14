@@ -463,7 +463,7 @@
           "script": {
             "exec": [
               "pm.test('status 200', () => pm.response.to.have.status(200));",
-              "pm.test('all own bookings', () => pm.expect(pm.response.json().count).to.eql(5));",
+              "pm.test('all own bookings', () => pm.expect(pm.response.json().count).to.eql(6));",
               "pm.test('hotel populated', () => pm.expect(pm.response.json().data[0].hotel.name).to.eql('Taco Hotel Bangkok'));",
               "pm.test('only own', () => pm.response.json().data.forEach(b => pm.expect(b.user).to.eql(pm.environment.get('user1Id'))));",
               "pm.test('has nights', () => pm.response.json().data.forEach(b => pm.expect(b.nights).to.be.a('number')));"
