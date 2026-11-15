@@ -86,6 +86,31 @@
         },
         "url": "{{baseUrl}}/api/v1/auth/login"
       }
+    },
+    {
+      "name": "GET /api-docs: Swagger documents auth, hotel and booking endpoints (A7, NFR4)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const text = pm.response.text();",
+              "const start = text.indexOf('\"swaggerDoc\":');",
+              "pm.test('init script carries the OpenAPI document', () => pm.expect(start).to.be.above(-1));",
+              "const doc = JSON.parse(text.slice(text.indexOf('{', start), text.indexOf('\"customOptions\"')).trim().replace(/,$/, '')).paths;",
+              "const expected = { '/auth/register': ['post'], '/auth/login': ['post'], '/auth/me': ['get'], '/auth/logout': ['get'], '/hotels': ['get', 'post'], '/hotels/{id}': ['get', 'put', 'delete'], '/bookings': ['get'], '/hotels/{hotelId}/bookings': ['get', 'post'], '/bookings/{id}': ['get', 'put', 'delete'] };",
+              "pm.test('every auth, hotel and booking endpoint of docs/api.md is documented', () => Object.entries(expected).forEach(([path, methods]) => { pm.expect(doc, path).to.have.property(path); methods.forEach((m) => pm.expect(doc[path], path + ' ' + m).to.have.property(m)); }));",
+              "pm.test('booking error codes documented', () => { pm.expect(doc['/hotels/{hotelId}/bookings'].post.responses).to.include.all.keys('201', '400', '401', '404'); pm.expect(doc['/bookings/{id}'].get.responses).to.include.all.keys('200', '401', '403', '404'); pm.expect(doc['/bookings/{id}'].put.responses).to.include.all.keys('200', '400', '401', '403', '404'); pm.expect(doc['/bookings/{id}'].delete.responses).to.include.all.keys('200', '401', '403', '404'); });",
+              "pm.test('auth and hotel error codes documented', () => { pm.expect(doc['/auth/register'].post.responses).to.include.all.keys('201', '400'); pm.expect(doc['/auth/login'].post.responses).to.include.all.keys('200', '401'); pm.expect(doc['/hotels'].post.responses).to.include.all.keys('201', '400', '401', '403'); pm.expect(doc['/hotels/{id}'].get.responses).to.include.all.keys('200', '404'); pm.expect(doc['/hotels/{id}'].put.responses).to.include.all.keys('200', '400', '401', '403', '404'); pm.expect(doc['/hotels/{id}'].delete.responses).to.include.all.keys('200', '401', '403', '404'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api-docs/swagger-ui-init.js"
+      }
     }
   ]
 }
