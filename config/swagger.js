@@ -1,4 +1,5 @@
 const swaggerJsDoc = require('swagger-jsdoc');
+const reviewDocs = require('./swagger-reviews');
 
 const hotelBody = {
   type: 'object',
@@ -30,10 +31,11 @@ const options = {
       description: 'Hotel REST API with bookings (Assignment 10)',
     },
     servers: [{ url: `http://localhost:${process.env.PORT || 5000}/api/v1` }],
-    tags: [{ name: 'Hotel', description: 'Hotel management' }],
+    tags: [{ name: 'Hotel', description: 'Hotel management' }, ...reviewDocs.tags],
     components: {
       securitySchemes: {
         bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+        ...reviewDocs.securitySchemes,
       },
       schemas: {
         Hotel: {
@@ -43,6 +45,7 @@ const options = {
           ],
         },
         HotelInput: { ...hotelBody, required: ['name'] },
+        ...reviewDocs.schemas,
       },
     },
     paths: {
@@ -131,6 +134,7 @@ const options = {
           },
         },
       },
+      ...reviewDocs.paths,
     },
   },
   apis: [],
