@@ -27,7 +27,9 @@ const notLoggedIn = error('Not logged in', 'Not authorize to access this route')
 const notAdmin = error('Logged in but not an admin', 'User role user is not authorized to access this route');
 const hotelNotFound = error('Hotel missing or invalid id', 'Hotel not found');
 const bookingNotFound = error('Booking missing or invalid id', 'No booking with the id of 6737a1f0c2b4a1e5f0a1b2c3');
-const notOwner = error('Not your booking (admins may)', 'User 6737a1f0c2b4a1e5f0a1b2c3 is not authorized to view this booking');
+const hotelMissingForBooking = error('Hotel missing or invalid id', 'No hotel with the id of 6737a1f0c2b4a1e5f0a1b2c3');
+const notOwner = (action) =>
+  error('Not your booking (admins may)', `User 6737a1f0c2b4a1e5f0a1b2c3 is not authorized to ${action} this booking`);
 const badDates = error('Missing dates, check-out not after check-in, or not 1 to 3 nights', 'A booking must be 1 to 3 nights');
 
 const auth = [{ bearerAuth: [] }, { cookieAuth: [] }];
@@ -70,6 +72,13 @@ const hotelBody = {
 };
 
 const schemas = {
+  Error: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: false },
+      message: { type: 'string' },
+    },
+  },
   Hotel: {
     allOf: [
       {
@@ -312,7 +321,7 @@ const paths = {
         201: ok('Booking created for the logged-in user', ref('Booking')),
         400: badDates,
         401: notLoggedIn,
-        404: hotelNotFound,
+        404: hotelMissingForBooking,
       },
     },
   },
@@ -322,7 +331,7 @@ const paths = {
       summary: 'Get a booking (owner or admin)',
       security: auth,
       parameters: [pathId('Booking id')],
-      responses: { 200: ok('The booking', ref('Booking')), 401: notLoggedIn, 403: notOwner, 404: bookingNotFound },
+      responses: { 200: ok('The booking', ref('Booking')), 401: notLoggedIn, 403: notOwner('view'), 404: bookingNotFound },
     },
     put: {
       tags: ['Booking'],
@@ -334,7 +343,7 @@ const paths = {
         200: ok('Booking updated', ref('Booking')),
         400: badDates,
         401: notLoggedIn,
-        403: notOwner,
+        403: notOwner('update'),
         404: bookingNotFound,
       },
     },
@@ -346,7 +355,7 @@ const paths = {
       responses: {
         200: ok('Booking deleted', { type: 'object', example: {} }),
         401: notLoggedIn,
-        403: notOwner,
+        403: notOwner('delete'),
         404: bookingNotFound,
       },
     },
