@@ -7,7 +7,7 @@ REST API for booking hotel stays (up to 3 nights) and reviewing hotels after che
 ```bash
 npm install
 cp config/config.env.example config/config.env   # then fill in MONGO_URI and JWT_SECRET
-npm run seed                                      # optional demo data
+npm run seed                                      # optional demo data: admin@gmail.com, user1@gmail.com, user2@gmail.com (password 12345678)
 npm run dev
 ```
 

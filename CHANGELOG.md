@@ -2,6 +2,14 @@
 
 All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Add new versions at the top.
 
+## [0.11.0] - 2026-11-15
+
+### Added
+- A6 (NFR4): `npm run seed` imports demo data for the real database: the admin, two demo users (`user1@gmail.com`, `user2@gmail.com`, password `12345678`), all hotels from `_data/hotel.csv`, and five bookings. Three have already checked out (reviewable, R1) and two have not (reviewing them gives 400). Dates are relative to the day you seed.
+
+### Changed
+- The seeder also removes reviews and the demo users when it resets, and no longer fixes a hotel id for the old appointment tests.
+
 ## [0.10.0] - 2026-11-15
 
 ### Added
