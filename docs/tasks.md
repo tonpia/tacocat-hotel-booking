@@ -1,6 +1,6 @@
 # Task board
 
-Status: `todo`, `doing` (work started, not finished), `done` (set in the card's own PR; on `main` once that PR is merged on the author's turn), `blocked` (reason in Notes).
+Status: `todo`, `doing` (work started, not finished), `done` (set in the card's own PR; on `main` once that PR is merged), `blocked` (reason in Notes).
 Type: `code` cards are done in this repo through PRs; `human` cards are done by the owner outside the repo (recording, slides, deploy settings).
 Edit only your own rows. A card can start when everything in "Depends on" is `done` on `main` and the card has no open PR yet.
 
