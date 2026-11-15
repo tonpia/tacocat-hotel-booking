@@ -28,7 +28,7 @@ Edit only your own rows. A card can start when everything in "Depends on" is `do
 | B3 | B | code | done | B2 | `GET /reviews`, `GET /reviews/:id`, `PUT /reviews/:id` (owner only), `DELETE /reviews/:id` (owner); average recalculated after edit and delete. Tests incl. 403 on someone else's review. | R3, R4 | b/B3-own-reviews | [#12](https://github.com/tonpia/tacocat-hotel-booking/pull/12) | |
 | B4 | B | code | done | B1 | `GET /hotels/:hotelId/reviews` public with `count` and `averageRating`; `GET /hotels/:id` shows `averageRating`, `reviewCount`. Tests. | R4 | b/B4-hotel-reviews | [#7](https://github.com/tonpia/tacocat-hotel-booking/pull/7) | |
 | B5 | B | code | done | B3, A5 | Admin delete any review; cascade: deleting a booking deletes its review, deleting a hotel deletes its reviews, averages stay correct. Tests. | R5 | b/B5-admin-delete-cascade | [#14](https://github.com/tonpia/tacocat-hotel-booking/pull/14) | |
-| B6 | B | code | todo | B5 | Swagger docs for all review endpoints. | NFR4 | | | |
+| B6 | B | code | review | B5 | Swagger docs for all review endpoints. | NFR4 | b/B6-review-swagger | | Review docs live in `config/swagger-reviews.js`, merged into `config/swagger.js` with four spread lines. |
 | B7 | B | code | todo | B5 | `docs/review-feature.md`: how to use R1 to R5 step by step in Postman (requests, bodies, expected responses), as the script for the how-to video and the extra-credit slide. | R1 to R5 | | | |
 | B8 | B | human | todo | B7 | Record the how-to video for R1 to R5 and put the link in the slides. | extra credit | | | |
 | B9 | B | human | todo | A8, A9, B8 | Assemble the slide deck (see `docs/requirements.md`, Final presentation) and submit on myCourseVille. | submission | | | |
