@@ -36,10 +36,11 @@ const bookingNotFound = error(
   'Booking missing or invalid id',
   'No booking with the id of 6737a1f0c2b4a1e5f0a1b2c3',
 );
-const notOwner = error(
-  'Not your booking (admins are allowed)',
-  'User 6737a1f0c2b4a1e5f0a1b2c3 is not authorized to view this booking',
-);
+const notOwner = (action) =>
+  error(
+    'Not your booking (admins are allowed)',
+    `User 6737a1f0c2b4a1e5f0a1b2c3 is not authorized to ${action} this booking`,
+  );
 const badDates = error(
   'Missing or invalid dates, check-out not after check-in, or stay is not 1 to 3 nights',
   'A booking must be 1 to 3 nights',
@@ -90,6 +91,13 @@ const hotelProps = {
 };
 
 const schemas = {
+  Error: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: false },
+      message: { type: 'string' },
+    },
+  },
   Hotel: {
     type: 'object',
     properties: {
@@ -348,7 +356,7 @@ const paths = {
       responses: {
         200: ok('The booking', ref('Booking')),
         401: notLoggedIn,
-        403: notOwner,
+        403: notOwner('view'),
         404: bookingNotFound,
       },
     },
@@ -363,7 +371,7 @@ const paths = {
         200: ok('Booking updated', ref('Booking')),
         400: badDates,
         401: notLoggedIn,
-        403: notOwner,
+        403: notOwner('update'),
         404: bookingNotFound,
       },
     },
@@ -375,7 +383,7 @@ const paths = {
       responses: {
         200: ok('Booking deleted', { type: 'object', example: {} }),
         401: notLoggedIn,
-        403: notOwner,
+        403: notOwner('delete'),
         404: bookingNotFound,
       },
     },
