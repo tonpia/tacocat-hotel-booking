@@ -1277,6 +1277,32 @@
           }
         ]
       }
+    },
+    {
+      "name": "GET /api-docs: Swagger documents auth, hotel and booking endpoints (A7, NFR4)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const text = pm.response.text();",
+              "const start = text.indexOf('\"swaggerDoc\":');",
+              "pm.test('init script carries the OpenAPI document', () => pm.expect(start).to.be.above(-1));",
+              "const doc = JSON.parse(text.slice(text.indexOf('{', start), text.indexOf('\"customOptions\"')).trim().replace(/,$/, '')).paths;",
+              "const has = (path, method, codes) => { pm.expect(doc, path).to.have.property(path); pm.expect(doc[path], path).to.have.property(method); pm.expect(doc[path][method].responses, path + ' ' + method).to.include.all.keys(...codes); };",
+              "pm.test('auth endpoints documented', () => { has('/auth/register', 'post', ['201', '400']); has('/auth/login', 'post', ['200', '400', '401']); has('/auth/me', 'get', ['200', '401']); has('/auth/logout', 'get', ['200', '401']); });",
+              "pm.test('hotel endpoints documented', () => { has('/hotels', 'get', ['200']); has('/hotels', 'post', ['201', '400', '401', '403']); has('/hotels/{id}', 'get', ['200', '404']); has('/hotels/{id}', 'put', ['200', '400', '401', '403', '404']); has('/hotels/{id}', 'delete', ['200', '401', '403', '404']); });",
+              "pm.test('booking endpoints documented', () => { has('/bookings', 'get', ['200', '401']); has('/hotels/{hotelId}/bookings', 'get', ['200', '401']); has('/hotels/{hotelId}/bookings', 'post', ['201', '400', '401', '404']); has('/bookings/{id}', 'get', ['200', '401', '403', '404']); has('/bookings/{id}', 'put', ['200', '400', '401', '403', '404']); has('/bookings/{id}', 'delete', ['200', '401', '403', '404']); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api-docs/swagger-ui-init.js"
+      }
     }
   ]
 }

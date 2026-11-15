@@ -2,6 +2,15 @@
 
 All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Add new versions at the top.
 
+## [0.12.0] - 2026-11-15
+
+### Added
+- A7 (NFR4): Swagger at `/api-docs` now documents every auth, hotel and booking endpoint as in `docs/api.md`: request bodies, response shapes, and the 400, 401, 403 and 404 cases with example messages. Cookie auth is listed next to the bearer token.
+- Postman test in `30-bookings` that reads `/api-docs` and checks every auth, hotel and booking path, method and error code is documented.
+
+### Changed
+- Base docs moved from `config/swagger.js` to `config/swagger-base.js`. The hotel docs now list `address` and `tel` as required, `averageRating` and `reviewCount`, and 400 and 403 responses (they were missing).
+
 ## [0.11.0] - 2026-11-15
 
 ### Added
