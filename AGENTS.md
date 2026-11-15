@@ -58,13 +58,12 @@ Every endpoint you add or change gets tests for the success case and each rule's
 ## Git workflow
 
 - Never push to `main`. Branch from `main` and open a PR to `main`. No review is required.
-- Merging: a card PR is merged by its author, on their turn (see Take turns): turn on auto-merge (`gh pr merge <number> --auto --squash --delete-branch`) and GitHub squash-merges it once the required checks `test` and `version` pass. Set your card to `done` in `docs/tasks.md` in the PR itself. Non-card PRs (setup, docs about the process) can auto-merge right away.
+- Merging: the author merges their own PR with auto-merge (`gh pr merge <number> --auto --squash --delete-branch`); GitHub squash-merges it once the required checks `test` and `version` pass. Set your card to `done` in `docs/tasks.md` in the PR itself.
 - Branch names: `a/<card-id>-<slug>` or `b/<card-id>-<slug>`, e.g. `a/A4-booking-crud`.
-- Start a card only when everything in its "Depends on" column is `done` (merged on `main`). Skip a card that already has an open PR. No stacked branches.
+- Start a card only when everything in its "Depends on" column is `done` (merged on `main`). Skip a card that already has an open PR. No stacked branches; keep one open card PR at a time.
 - Commits: [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `test:`, `docs:`, `refactor:`, `chore:`, `ci:`), small and focused. Scope optional, e.g. `feat(bookings): limit stays to 3 nights`.
 - Commit under your own git identity (your name and the email on your GitHub account) so the GitHub Contributors graph shows who did what. No co-author trailers or tool attribution lines in commits or PR descriptions.
 - In the same PR, update your card in `docs/tasks.md` (status, branch, PR link). Only edit your own cards.
-- Take turns merging, not working. Merges of card PRs (PR title contains a card ID such as `(A3)`) alternate between A and B. It is your turn to merge when the newest merged card PR is the other person's, or the other person has no card they can start, or they have merged no card PR in the last 8 hours (idle). When it is not your turn, keep working: open your next card PR without auto-merge and write "Waiting for turn" at the top of its description; on your next turn, rebase it on `main`, re-bump the version from `main`, and merge it. Keep at most one open card PR at a time.
 
 ## Versioning
 
