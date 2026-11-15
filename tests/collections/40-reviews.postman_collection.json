@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "40 Reviews",
-    "description": "Hotel review feature (R1 to R5). B1: Review model rules and hotel averageRating/reviewCount. B4: public GET /hotels/:hotelId/reviews. B2: POST /bookings/:bookingId/reviews. B3: GET /reviews (own, admin all), GET /reviews/:id, PUT and DELETE /reviews/:id (owner). B5: admin DELETE /reviews/:id (R5); deleting a booking deletes its review and deleting a hotel deletes its reviews, with averages kept correct; averageRating and reviewCount cannot be set through the hotel endpoints.",
+    "description": "Hotel review feature (R1 to R5). B1: Review model rules and hotel averageRating/reviewCount. B4: public GET /hotels/:hotelId/reviews. B2: POST /bookings/:bookingId/reviews. B3: GET /reviews (own, admin all), GET /reviews/:id, PUT and DELETE /reviews/:id (owner). B5: admin DELETE /reviews/:id (R5); deleting a booking deletes its review and deleting a hotel deletes its reviews, with averages kept correct; averageRating and reviewCount cannot be set through the hotel endpoints. B6: Swagger at /api-docs documents every review endpoint.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -2914,6 +2914,30 @@
           "mode": "raw",
           "raw": "{\"name\": \"Stats Body Hotel\", \"address\": \"7 Fixture Road\", \"tel\": \"020000007\", \"averageRating\": 4.5, \"reviewCount\": 10}"
         }
+      }
+    },
+    {
+      "name": "GET /api-docs: Swagger documents every review endpoint (B6, NFR4)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const text = pm.response.text();",
+              "const start = text.indexOf('\"swaggerDoc\":');",
+              "pm.test('init script carries the OpenAPI document', () => pm.expect(start).to.be.above(-1));",
+              "const doc = JSON.parse(text.slice(text.indexOf('{', start), text.indexOf('\"customOptions\"')).trim().replace(/,$/, '')).paths;",
+              "pm.test('review paths documented', () => { ['/bookings/{bookingId}/reviews', '/hotels/{hotelId}/reviews', '/reviews', '/reviews/{id}'].forEach((path) => pm.expect(doc).to.have.property(path)); });",
+              "pm.test('every review method documented', () => { pm.expect(doc['/bookings/{bookingId}/reviews']).to.have.property('post'); pm.expect(doc['/hotels/{hotelId}/reviews']).to.have.property('get'); pm.expect(doc['/reviews']).to.have.property('get'); pm.expect(doc['/reviews/{id}']).to.include.all.keys('get', 'put', 'delete'); });",
+              "pm.test('review error codes documented', () => { pm.expect(doc['/bookings/{bookingId}/reviews'].post.responses).to.include.all.keys('201', '400', '401', '403', '404'); pm.expect(doc['/reviews/{id}'].put.responses).to.include.all.keys('200', '400', '401', '403', '404'); pm.expect(doc['/reviews/{id}'].delete.responses).to.include.all.keys('200', '401', '403', '404'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api-docs/swagger-ui-init.js"
       }
     }
   ]
