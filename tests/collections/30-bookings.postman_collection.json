@@ -527,6 +527,756 @@
           }
         ]
       }
+    },
+    {
+      "name": "Login user2",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.environment.set('user2Token', pm.response.json().token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/auth/login",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\": \"{{user2Email}}\", \"password\": \"{{user2Password}}\"}"
+        }
+      }
+    },
+    {
+      "name": "Get own booking is 200",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('own booking with hotel', () => { const d = pm.response.json().data; pm.expect(d._id).to.eql(pm.environment.get('user1FutureBookingId')); pm.expect(d.hotel.name).to.eql('Taco Hotel Bangkok'); pm.expect(d.nights).to.eql(2); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/bookings/{{user1FutureBookingId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{user1Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Get booking without token is 401",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 401', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/bookings/{{user1FutureBookingId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer invalid"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Get someone else's booking is 403",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 403', () => pm.response.to.have.status(403));",
+              "pm.test('failure shape', () => pm.expect(pm.response.json().success).to.eql(false));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/bookings/{{user2BookingId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{user1Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Admin gets any booking is 200",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/bookings/{{user2BookingId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Get missing booking is 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/bookings/000000000000000000000000",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{user1Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Get booking with invalid id is 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/bookings/not-an-id",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{user1Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "User2 lists only own bookings",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('one booking, own', () => { const j = pm.response.json(); pm.expect(j.count).to.eql(1); pm.expect(j.data[0].user).to.eql(pm.environment.get('user2Id')); });",
+              "pm.test('hotel has name address tel', () => { const h = pm.response.json().data[0].hotel; pm.expect(h.name).to.eql('Cat Resort Chiang Mai'); pm.expect(h.address).to.be.a('string'); pm.expect(h.tel).to.be.a('string'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/bookings",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{user2Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Admin lists all bookings",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('both users present', () => { const users = pm.response.json().data.map(b => b.user); pm.expect(users).to.include(pm.environment.get('user1Id')); pm.expect(users).to.include(pm.environment.get('user2Id')); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/bookings",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "List bookings of a hotel without token is 401",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 401', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{hotel2Id}}/bookings",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer invalid"
+          }
+        ]
+      }
+    },
+    {
+      "name": "User lists own bookings of a hotel",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('user1 has none at hotel 2', () => pm.expect(pm.response.json().count).to.eql(0));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{hotel2Id}}/bookings",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{user1Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "User2 lists own bookings of a hotel",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('only that hotel and user', () => { const j = pm.response.json(); pm.expect(j.count).to.eql(1); pm.expect(j.data[0].hotel._id).to.eql(pm.environment.get('hotel2Id')); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{hotel2Id}}/bookings",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{user2Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Admin lists bookings of a hotel",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('only that hotel', () => pm.response.json().data.forEach(b => pm.expect(b.hotel._id).to.eql(pm.environment.get('hotel2Id'))));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/hotels/{{hotel2Id}}/bookings",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Update booking without token is 401",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 401', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/bookings/{{user1FutureBookingId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer invalid"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"checkInDate\": \"2027-06-01\", \"checkOutDate\": \"2027-06-04\"}"
+        }
+      }
+    },
+    {
+      "name": "Update someone else's booking is 403",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/bookings/{{user2BookingId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{user1Token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"checkInDate\": \"2027-06-01\", \"checkOutDate\": \"2027-06-04\"}"
+        }
+      }
+    },
+    {
+      "name": "Update missing booking is 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/bookings/000000000000000000000000",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{user1Token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"checkInDate\": \"2027-06-01\", \"checkOutDate\": \"2027-06-04\"}"
+        }
+      }
+    },
+    {
+      "name": "Update own booking dates is 200",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('dates changed, 3 nights', () => { const d = pm.response.json().data; pm.expect(d.checkInDate).to.include('2027-06-01'); pm.expect(d.nights).to.eql(3); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/bookings/{{user1FutureBookingId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{user1Token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"checkInDate\": \"2027-06-01\", \"checkOutDate\": \"2027-06-04\"}"
+        }
+      }
+    },
+    {
+      "name": "Update to 4 nights is 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('message', () => pm.expect(pm.response.json().success).to.eql(false));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/bookings/{{user1FutureBookingId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{user1Token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"checkInDate\": \"2027-06-01\", \"checkOutDate\": \"2027-06-05\"}"
+        }
+      }
+    },
+    {
+      "name": "Update only check-out making 4+ nights is 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/bookings/{{user1FutureBookingId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{user1Token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"checkOutDate\": \"2027-06-10\"}"
+        }
+      }
+    },
+    {
+      "name": "Update with check-out before check-in is 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/bookings/{{user1FutureBookingId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{user1Token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"checkInDate\": \"2027-06-05\", \"checkOutDate\": \"2027-06-01\"}"
+        }
+      }
+    },
+    {
+      "name": "Booking keeps valid dates after failed updates",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('unchanged', () => pm.expect(pm.response.json().data.nights).to.eql(3));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/bookings/{{user1FutureBookingId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{user1Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Admin updates any booking is 200",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('1 night', () => pm.expect(pm.response.json().data.nights).to.eql(1));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/v1/bookings/{{user2BookingId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"checkInDate\": \"2027-07-01\", \"checkOutDate\": \"2027-07-02\"}"
+        }
+      }
+    },
+    {
+      "name": "Delete booking without token is 401",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 401', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/bookings/{{user1PastBookingId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer invalid"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Delete someone else's booking is 403",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/bookings/{{user2BookingId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{user1Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Delete missing booking is 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/bookings/000000000000000000000000",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{user1Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Delete own booking is 200",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('empty data', () => pm.expect(pm.response.json()).to.eql({ success: true, data: {} }));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/bookings/{{user1PastBookingId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{user1Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Deleted booking is gone",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/bookings/{{user1PastBookingId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{user1Token}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Admin deletes any booking is 200",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/bookings/{{user2BookingId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "User2 has no bookings left",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('none', () => pm.expect(pm.response.json().count).to.eql(0));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/bookings",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{user2Token}}"
+          }
+        ]
+      }
     }
   ]
 }

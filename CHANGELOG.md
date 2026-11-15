@@ -2,6 +2,16 @@
 
 All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Add new versions at the top.
 
+## [0.10.0] - 2026-11-15
+
+### Added
+- A4 (FR3 to FR9, NFR2): booking endpoints finished per `docs/api.md`. `GET /hotels/:hotelId/bookings` now also limits a user's list to that hotel (before, the hotel id was ignored for users).
+- Postman tests in `30-bookings` for view, list (own, admin all, per hotel), update and delete: 401, 403, 404 and 400 cases, and admin access.
+
+### Changed
+- Viewing, updating or deleting someone else's booking returns 403 (was 401). A missing or invalid booking id returns 404 (an invalid id was 500).
+- Booking lists and `GET /bookings/:id` populate the hotel's `name`, `address` and `tel` as in `docs/api.md`.
+
 ## [0.9.0] - 2026-11-15
 
 ### Added
