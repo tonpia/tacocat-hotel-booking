@@ -1,0 +1,29 @@
+sequenceDiagram
+  participant C as Client (Postman)
+  participant S as #lt;#lt;javaScript#gt;#gt;<br/>:server
+  participant R as #lt;#lt;router#gt;#gt;<br/>:auth
+  participant K as #lt;#lt;controllers#gt;#gt;<br/>:auth
+  participant M as #lt;#lt;model#gt;#gt;<br/>:User
+  participant D as #lt;#lt;MongoDB#gt;#gt;<br/>:users
+  Note left of S: login
+  C->>+S: req.post('/api/v1/auth/login')<br/>{email, password}
+  S->>+R: app.use('/api/v1/auth', auth)
+  R->>+K: login
+  alt email or password missing
+    K-->>C: 400 {success: false, message}
+  else
+    K->>+M: User.findOne({email}).select('+password')
+    M->>+D: UserSchema
+    D-->>-M: user
+    M-->>-K: user
+    K->>+M: user.matchPassword(password)
+    M-->>-K: isMatch
+    alt unknown email or wrong password
+      K-->>C: 401 Invalid credentials
+    else match
+      K->>K: sendTokenResponse(user, 200)
+    end
+  end
+  K-->>-R: 
+  R-->>-S: 
+  S-->>-C: 200 {success, token} + token cookie

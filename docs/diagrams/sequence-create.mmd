@@ -1,0 +1,29 @@
+sequenceDiagram
+  participant C as Client (Postman)
+  participant S as #lt;#lt;javaScript#gt;#gt;<br/>:server
+  participant RH as #lt;#lt;router#gt;#gt;<br/>:hotels
+  participant RB as #lt;#lt;router#gt;#gt;<br/>:bookings
+  participant A as #lt;#lt;middleware#gt;#gt;<br/>:auth
+  participant K as #lt;#lt;controllers#gt;#gt;<br/>:bookings
+  participant H as #lt;#lt;model#gt;#gt;<br/>:Hotel
+  participant B as #lt;#lt;model#gt;#gt;<br/>:Booking
+  participant D as #lt;#lt;MongoDB#gt;#gt;<br/>:bookings
+  Note left of S: create booking
+  C->>+S: req.post('/api/v1/hotels/:hotelId/bookings')<br/>{checkInDate, checkOutDate}
+  S->>+RH: app.use('/api/v1/hotels', hotels)
+  RH->>+RB: router.use('/:hotelId/bookings', bookings)
+  RB->>+A: protect, authorize('admin','user')
+  A-->>C: 401 if no or bad token
+  A->>+K: addBooking (req.user)
+  K->>+H: Hotel.findById(hotelId)
+  H-->>-K: hotel (404 if none)
+  K->>+B: Booking.create({hotel, user, dates})
+  B->>B: check-out after check-in, 1 to 3 nights (else 400)
+  B->>+D: BookingSchema
+  D-->>-B: booking
+  B-->>-K: booking
+  K-->>-A: 
+  A-->>-RB: 
+  RB-->>-RH: 
+  RH-->>-S: 
+  S-->>-C: 201 {success, data: booking}

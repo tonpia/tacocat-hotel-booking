@@ -1,0 +1,30 @@
+sequenceDiagram
+  participant C as Client (Postman)
+  participant S as #lt;#lt;javaScript#gt;#gt;<br/>:server
+  participant R as #lt;#lt;router#gt;#gt;<br/>:bookings
+  participant A as #lt;#lt;middleware#gt;#gt;<br/>:auth
+  participant K as #lt;#lt;controllers#gt;#gt;<br/>:bookings
+  participant B as #lt;#lt;model#gt;#gt;<br/>:Booking
+  participant D as #lt;#lt;MongoDB#gt;#gt;<br/>:bookings
+  Note left of S: delete booking
+  C->>+S: req.delete('/api/v1/bookings/:id')
+  S->>+R: app.use('/api/v1/bookings', bookings)
+  R->>+A: protect, authorize('admin','user')
+  A-->>C: 401 if no or bad token
+  A->>+K: deleteBooking (req.user)
+  K->>+B: Booking.findById(id)
+  B->>+D: BookingSchema
+  D-->>-B: booking
+  B-->>-K: booking (404 if none)
+  alt not the owner and not admin
+    K-->>C: 403 not authorized to delete this booking
+  else owner or admin
+    K->>+B: booking.deleteOne()
+    B->>+D: delete (its review is deleted too)
+    D-->>-B: 
+    B-->>-K: 
+  end
+  K-->>-A: 
+  A-->>-R: 
+  R-->>-S: 
+  S-->>-C: 200 {success, data: {}}
