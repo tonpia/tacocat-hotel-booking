@@ -1,0 +1,31 @@
+digraph usecase {
+  rankdir=LR;
+  graph [fontname="Helvetica", nodesep=0.18, ranksep=1.1, bgcolor="white", pad=0.2];
+  node [fontname="Helvetica", fontsize=15];
+  edge [arrowhead=none, color="#14213D", penwidth=1.4];
+
+  visitor [shape=none, label="«actor»\nVisitor", fontsize=17];
+  user    [shape=none, label="«actor»\nUser", fontsize=17];
+  admin   [shape=none, label="«actor»\nAdmin", fontsize=17];
+
+  subgraph cluster_system {
+    label="Hotel Booking API"; fontsize=17; style="rounded"; color="#14213D"; penwidth=1.6;
+    node [shape=ellipse, style=filled, fillcolor="#FBEBDD", color="#C0611D", width=3.4];
+    register     [label="Register"];
+    login        [label="Log in"];
+    viewhotels   [label="View hotels and one hotel"];
+    logout       [label="Log out"];
+    book         [label="Book a hotel for 1 to 3 nights"];
+    mybookings   [label="View my bookings"];
+    editbooking  [label="Change dates of my booking"];
+    cancelbooking[label="Delete my booking"];
+    managehotels [label="Add, change and delete hotels"];
+    allbookings  [label="View, change and delete any booking"];
+  }
+
+  visitor -> register; visitor -> login; visitor -> viewhotels;
+  user -> viewhotels; user -> logout; user -> book; user -> mybookings; user -> editbooking; user -> cancelbooking;
+  managehotels -> admin; allbookings -> admin;
+  admin -> user [constraint=false, arrowhead=empty, arrowsize=1.6, label="  also a User", fontname="Helvetica", fontsize=13];
+  {rank=same; visitor; user;}
+}

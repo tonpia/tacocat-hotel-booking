@@ -1,0 +1,88 @@
+digraph RestProfile {
+  rankdir=TB;
+  graph [fontname="Helvetica", bgcolor="white", nodesep=0.45, ranksep=0.5, pad=0.25, newrank=true];
+  node  [shape=plaintext, fontname="Helvetica", fontsize=13];
+  edge  [style=dashed, arrowhead=vee, arrowsize=0.9, fontname="Helvetica", fontsize=12, color="#333333"];
+
+  subgraph cluster_api {
+    label=<<b>HotelBookingAPI</b>>; labeljust=l; fontsize=14; color="#9673A6"; style="solid"; penwidth=1.4;
+
+    app [label=<
+      <table border="1" cellborder="0" cellspacing="0" cellpadding="6" bgcolor="#FFF2CC" color="#D6B656">
+        <tr><td><i>&lt;&lt;Application&gt;&gt;</i><br/><b>HotelBookingService</b></td></tr>
+        <tr><td sides="t" border="1" height="18"> </td></tr>
+      </table>>];
+
+    auth [label=<
+      <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#D5E8D4" color="#82B366">
+        <tr><td><i>&lt;&lt;Resource&gt;&gt;</i><br/><b>Auth</b></td></tr>
+        <tr><td sides="t" border="1" align="left" balign="left">&lt;&lt;POST&gt;&gt; +register(): Token<br/>&lt;&lt;POST&gt;&gt; +login(): Token<br/>&lt;&lt;GET&gt;&gt; +getMe(): User<br/>&lt;&lt;GET&gt;&gt; +logout(): void</td></tr>
+      </table>>];
+
+    hotels [label=<
+      <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#D5E8D4" color="#82B366">
+        <tr><td><i>&lt;&lt;Resource&gt;&gt;</i><br/><b>Hotels</b></td></tr>
+        <tr><td sides="t" border="1" align="left" balign="left">&lt;&lt;GET&gt;&gt; +getHotels(): Hotel<br/>&lt;&lt;POST&gt;&gt; +createHotel(): Hotel</td></tr>
+      </table>>];
+
+    hotel [label=<
+      <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#D5E8D4" color="#82B366">
+        <tr><td><i>&lt;&lt;Resource&gt;&gt;</i><br/><b>Hotel</b></td></tr>
+        <tr><td sides="t" border="1" align="left" balign="left">&lt;&lt;GET&gt;&gt; +getHotel(): Hotel<br/>&lt;&lt;PUT&gt;&gt; +updateHotel(): Hotel<br/>&lt;&lt;DELETE&gt;&gt; +deleteHotel(): void</td></tr>
+      </table>>];
+
+    hotelbookings [label=<
+      <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#D5E8D4" color="#82B366">
+        <tr><td><i>&lt;&lt;Resource&gt;&gt;</i><br/><b>HotelBookings</b></td></tr>
+        <tr><td sides="t" border="1" align="left" balign="left">&lt;&lt;GET&gt;&gt; +getBookings(): Booking<br/>&lt;&lt;POST&gt;&gt; +addBooking(): Booking</td></tr>
+      </table>>];
+
+    bookings [label=<
+      <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#D5E8D4" color="#82B366">
+        <tr><td><i>&lt;&lt;Resource&gt;&gt;</i><br/><b>Bookings</b></td></tr>
+        <tr><td sides="t" border="1" align="left" balign="left">&lt;&lt;GET&gt;&gt; +getBookings(): Booking</td></tr>
+      </table>>];
+
+    booking [label=<
+      <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#D5E8D4" color="#82B366">
+        <tr><td><i>&lt;&lt;Resource&gt;&gt;</i><br/><b>Booking</b></td></tr>
+        <tr><td sides="t" border="1" align="left" balign="left">&lt;&lt;GET&gt;&gt; +getBooking(): Booking<br/>&lt;&lt;PUT&gt;&gt; +updateBooking(): Booking<br/>&lt;&lt;DELETE&gt;&gt; +deleteBooking(): void</td></tr>
+      </table>>];
+
+    userrep [label=<
+      <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#D5E8D4" color="#82B366">
+        <tr><td><i>&lt;&lt;Representation&gt;&gt;</i><br/><b>User</b></td></tr>
+        <tr><td sides="t" border="1" align="left" balign="left">- name<br/>- tel<br/>- email<br/>- password<br/>- role<br/>- createdAt</td></tr>
+      </table>>];
+
+    hotelrep [label=<
+      <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#D5E8D4" color="#82B366">
+        <tr><td><i>&lt;&lt;Representation&gt;&gt;</i><br/><b>Hotel</b></td></tr>
+        <tr><td sides="t" border="1" align="left" balign="left">- name<br/>- address<br/>- district<br/>- province<br/>- postalcode<br/>- tel<br/>- region</td></tr>
+      </table>>];
+
+    bookingrep [label=<
+      <table border="1" cellborder="0" cellspacing="0" cellpadding="5" bgcolor="#D5E8D4" color="#82B366">
+        <tr><td><i>&lt;&lt;Representation&gt;&gt;</i><br/><b>Booking</b></td></tr>
+        <tr><td sides="t" border="1" align="left" balign="left">- checkInDate<br/>- checkOutDate<br/>- user<br/>- hotel<br/>- createdAt</td></tr>
+      </table>>];
+  }
+
+  app -> auth     [label="/auth\n<<Path>>"];
+  app -> hotels   [label="/hotels\n<<Path>>"];
+  app -> bookings [label="/bookings\n<<Path>>"];
+  hotels -> hotel [label="/{hotelId}\n<<Path>>"];
+  hotel -> hotelbookings [label="/bookings\n<<Path>>"];
+  bookings -> booking [label="/{bookingId}\n<<Path>>"];
+
+  auth -> userrep [label="<<use>>"];
+  hotel -> hotelrep [label="<<use>>"];
+  hotels -> hotelrep [label="<<use>>"];
+  hotelbookings -> bookingrep [label="<<use>>"];
+  booking -> bookingrep [label="<<use>>"];
+  bookings -> bookingrep [label="<<use>>", constraint=false];
+
+  {rank=same; auth; hotels; bookings;}
+  {rank=same; hotel; booking; userrep;}
+  {rank=same; hotelbookings; hotelrep; bookingrep;}
+}

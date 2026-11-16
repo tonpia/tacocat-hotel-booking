@@ -1,0 +1,20 @@
+sequenceDiagram
+  participant C as Client (Postman)
+  participant S as #lt;#lt;javaScript#gt;#gt;<br/>:server
+  participant R as #lt;#lt;router#gt;#gt;<br/>:auth
+  participant K as #lt;#lt;controllers#gt;#gt;<br/>:auth
+  participant M as #lt;#lt;model#gt;#gt;<br/>:User
+  participant D as #lt;#lt;MongoDB#gt;#gt;<br/>:users
+  Note left of S: register
+  C->>+S: req.post('/api/v1/auth/register')<br/>{name, tel, email, password}
+  S->>+R: app.use('/api/v1/auth', auth)
+  R->>+K: register
+  K->>+M: User.create(name, tel, email, password)
+  M->>M: validate tel, email, password ≥ 6, hash password
+  M->>+D: UserSchema
+  D-->>-M: user
+  M-->>-K: user
+  K->>K: sendTokenResponse(user, 201)
+  K-->>-R: 
+  R-->>-S: 
+  S-->>-C: 201 {success, token} + token cookie<br/>(400 if invalid or email already used)
