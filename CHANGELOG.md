@@ -2,6 +2,11 @@
 
 All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Add new versions at the top.
 
+## [1.0.0] - 2026-11-16
+
+### Changed
+- First stable release: the version submitted for the final project. The API in `docs/api.md` (auth, hotels, bookings and hotel reviews R1 to R5) is now stable; later breaking changes will bump the major version.
+
 ## [0.11.0] - 2026-11-15
 
 ### Added
