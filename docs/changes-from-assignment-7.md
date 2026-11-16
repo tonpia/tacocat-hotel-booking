@@ -4,7 +4,7 @@ For the "code changed from Assignment 7" slide. Compare link (everything since t
 
 https://github.com/tonpia/tacocat-hotel-booking/compare/assignment-7-base...main
 
-Written at version 0.11.0. Update it before submission: run `git diff --stat assignment-7-base..main` and add anything that moved. Review feature files (B) are listed in their own section, the base parts (A) first.
+Written at version 1.0.0, the submitted version. To see the full list of files: `git diff --stat assignment-7-base..v1.0.0`. Review feature files (B) are listed in their own section, the base parts (A) first.
 
 ## In one slide
 
@@ -37,9 +37,9 @@ Written at version 0.11.0. Update it before submission: run `git diff --stat ass
 | --- | --- |
 | `tests/run.js`, `tests/fixtures/`, `tests/collections/` | `npm test` starts an in-memory MongoDB, seeds fixtures, starts the API and runs the Postman collections with Newman. Replaces the old `node autograde.js` test script. Collections: `00-smoke`, `10-auth`, `20-hotels`, `30-bookings` (base), `40-reviews` (review). |
 | `.github/workflows/ci.yml`, `release.yml`, `pull_request_template.md` | CI with required checks `test` and `version`; tags and releases from `package.json`; PR template. |
-| `package.json`, `CHANGELOG.md` | Project renamed, semantic version (now 0.11.0), changelog for every feature and fix. |
+| `package.json`, `CHANGELOG.md` | Project renamed, semantic version (now 1.0.0), changelog for every feature and fix. |
 | `AGENTS.md`, `CLAUDE.md`, `docs/requirements.md`, `docs/api.md`, `docs/tasks.md` | Team rules, requirements, the API contract and the task board. |
-| `docs/diagrams.md` | Use case, class and sequence diagrams for the changed base parts. |
+| `docs/diagrams.md`, `docs/diagrams/` | Use case, class (REST UML profile) and sequence diagrams for the changed base parts, in the chapter 6 format, with full-size images and their sources. |
 | `README.md`, `config/config.env.example` | Run instructions and the settings template. |
 
 ## By file: reviews (person B), for completeness
@@ -48,4 +48,4 @@ Written at version 0.11.0. Update it before submission: run `git diff --stat ass
 
 ## Releases
 
-Each merged feature or fix has a version tag and GitHub release (`v0.1.0` to `v0.11.0`); the breaking renames are marked BREAKING in `CHANGELOG.md`. 1.0.0 will be the submitted version.
+Each merged feature or fix has a version tag and GitHub release (`v0.1.0` to `v1.0.0`); the breaking renames are marked BREAKING in `CHANGELOG.md`. 1.0.0 is the submitted version.
